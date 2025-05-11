@@ -65,17 +65,31 @@ function logSuccess(message) {
 /**
  * Log a warning message
  * @param {string} message - The warning message
+ * @param {Object} options - Options for the warning
  */
-function logWarning(message) {
-  core.warning(`${colors.yellow}⚠ ${message}${colors.reset}`)
+function logWarning(message, options) {
+  if (options) {
+    // This is an annotation
+    core.warning(`${colors.yellow}⚠ ${message}${colors.reset}`, options)
+  } else {
+    // This is just a log message, use info to avoid creating annotations
+    core.info(`${colors.yellow}⚠ WARNING: ${message}${colors.reset}`)
+  }
 }
 
 /**
  * Log an error message
  * @param {string} message - The error message
+ * @param {Object} options - Options for the error
  */
-function logError(message) {
-  core.error(`${colors.red}✗ ${message}${colors.reset}`)
+function logError(message, options) {
+  if (options) {
+    // This is an annotation
+    core.error(`${colors.red}✗ ${message}${colors.reset}`, options)
+  } else {
+    // This is just a log message, use info to avoid creating annotations
+    core.info(`${colors.red}✗ ERROR: ${message}${colors.reset}`)
+  }
 }
 
 /**

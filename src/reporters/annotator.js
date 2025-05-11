@@ -39,16 +39,22 @@ async function createAnnotations(token, violations, checkName) {
 
       // Use GitHub's workflow commands to create annotations
       const file = violation.file
+      // Ensure line numbers are properly parsed as integers
       const line = Number.parseInt(violation.line || violation.beginline || "1", 10) || 1
       const col = Number.parseInt(violation.column || violation.begincolumn || "1", 10) || 1
+      const endLine = Number.parseInt(violation.endline || line, 10) || line
+      const endColumn = Number.parseInt(violation.endcolumn || col, 10) || col
+
+      // Create options object for annotations
+      const options = { file, line, col, endLine, endColumn }
 
       // Use the appropriate command based on the annotation level
       if (annotationLevel === "error") {
-        core.error(message, { file, line, col })
+        logError(message, options)
       } else if (annotationLevel === "warning") {
-        core.warning(message, { file, line, col })
+        logWarning(message, options)
       } else {
-        core.notice(message, { file, line, col })
+        core.notice(message, options)
       }
     } catch (error) {
       logWarning(`Failed to create annotation: ${error.message}`)
