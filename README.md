@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 1
 
       - name: Run Code Quality Scan
-        uses: your-org/code-quality-action@v1
+        uses: your-org/multi-code-scan-action@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sourcePath: "src/"
@@ -69,7 +69,7 @@ For Salesforce projects, enable the Salesforce-specific plugins:
 
 \`\`\`yaml
 - name: Run Code Quality Scan
-  uses: your-org/code-quality-action@v1
+  uses: your-org/multi-code-scan-action@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "force-app/main/default/"
@@ -166,7 +166,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 
 \`\`\`yaml
 - name: Run Code Quality Scan
-  uses: your-org/code-quality-action@v1
+  uses: your-org/multi-code-scan-action@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/main/java/"
@@ -188,7 +188,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 
 \`\`\`yaml
 - name: Run Code Quality Scan
-  uses: your-org/code-quality-action@v1
+  uses: your-org/multi-code-scan-action@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
@@ -210,7 +210,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 
 \`\`\`yaml
 - name: Run Code Quality Scan
-  uses: your-org/code-quality-action@v1
+  uses: your-org/multi-code-scan-action@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
@@ -232,7 +232,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 
 \`\`\`yaml
 - name: Run Code Quality Scan
-  uses: your-org/code-quality-action@v1
+  uses: your-org/multi-code-scan-action@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
@@ -254,7 +254,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 
 \`\`\`yaml
 - name: Run Code Quality Scan
-  uses: your-org/code-quality-action@v1
+  uses: your-org/multi-code-scan-action@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "force-app/main/default/"
@@ -349,7 +349,7 @@ You can use the violations output in subsequent steps of your workflow:
 \`\`\`yaml
 - name: Run Code Quality Scan
   id: code-scan
-  uses: your-org/code-quality-action@v1
+  uses: your-org/multi-code-scan-action@v1
   with:
     # ... inputs as above ...
 
