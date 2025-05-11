@@ -1,0 +1,90 @@
+name: 'Code Quality Scan'
+description: 'Runs code quality checks using PMD and ESLint'
+author: 'Your Organization'
+
+inputs:
+  github-token:
+    description: 'GitHub token for creating annotations and comments'
+    required: true
+  sourcePath:
+    description: 'Root source path to filter changed files (e.g., src/, force-app/)'
+    required: true
+  file-types-config:
+    description: 'JSON configuration of file types to analyze'
+    required: true
+  scanChangedFilesOnly:
+    description: 'Whether to scan only changed files (true) or all files (false)'
+    required: false
+    default: 'true'
+  enableScanCache:
+    description: 'Enable caching for faster scans'
+    required: false
+    default: 'true'
+  outputFormats:
+    description: 'Comma-separated list of output formats (github,json,html,text)'
+    required: false
+    default: 'github'
+  maxCriticalViolations:
+    description: 'Maximum number of critical/high violations allowed before failing'
+    required: false
+    default: '0'
+  maxMediumViolations:
+    description: 'Maximum number of medium violations allowed before failing'
+    required: false
+    default: '10'
+  previousViolationsFile:
+    description: 'Path to file containing previous violations to ignore'
+    required: false
+    default: ''
+  failOnQualityIssues:
+    description: 'Whether to fail the workflow if quality issues exceed thresholds'
+    required: false
+    default: 'true'
+  check-name:
+    description: 'Name of the check run to create'
+    required: false
+    default: 'Code Quality Scan'
+  strictNewFiles:
+    description: 'Whether to apply strict rules to new files (any violation fails)'
+    required: false
+    default: 'true'
+  maxViolationsForModifiedFiles:
+    description: 'Maximum number of violations allowed for modified files before failing'
+    required: false
+    default: '10'
+  maxCriticalViolationsForModifiedFiles:
+    description: 'Maximum number of critical/high violations allowed for modified files before failing'
+    required: false
+    default: '0'
+  installSalesforcePlugins:
+    description: 'Whether to install Salesforce-specific ESLint plugins'
+    required: false
+    default: 'false'
+
+outputs:
+  total-violations:
+    description: 'Total number of violations found'
+  critical-violations:
+    description: 'Number of critical/high violations found'
+  medium-violations:
+    description: 'Number of medium violations found'
+  json-report-path:
+    description: 'Path to the JSON report file (if generated)'
+  html-report-path:
+    description: 'Path to the HTML report file (if generated)'
+  text-report-path:
+    description: 'Path to the text report file (if generated)'
+  violations:
+    description: 'JSON string containing all violations found'
+  new-file-violations:
+    description: 'Number of violations in new files'
+  modified-file-violations:
+    description: 'Number of violations in modified files'
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
