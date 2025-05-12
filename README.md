@@ -18,8 +18,7 @@ A GitHub Action for running code quality checks using PMD and ESLint. This actio
 
 ### Basic Usage
 
-\`\`\`yaml
-name: Code Quality
+<pre><code class="language-yaml">name: Code Quality
 
 on:
   pull_request:
@@ -38,7 +37,7 @@ jobs:
       - name: Run Code Quality Scan
         uses: your-org/multi-code-scan-action@v1
         with:
-          github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           sourcePath: "src/"
           file-types-config: |
             [
@@ -61,17 +60,16 @@ jobs:
                 ]
               }
             ]
-\`\`\`
+</code></pre>
 
 ### Salesforce Usage
 
 For Salesforce projects, enable the Salesforce-specific plugins:
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "force-app/main/default/"
     installSalesforcePlugins: true
     file-types-config: |
@@ -95,7 +93,7 @@ For Salesforce projects, enable the Salesforce-specific plugins:
           ]
         }
       ]
-\`\`\`
+</code></pre>
 
 ## Inputs
 
@@ -164,11 +162,10 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 
 ### Java Project
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/main/java/"
     file-types-config: |
       [
@@ -182,15 +179,14 @@ If `rulesPaths` is not specified, the action will use default rulesets:
           ]
         }
       ]
-\`\`\`
+</code></pre>
 
 ### JavaScript Project
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
     file-types-config: |
       [
@@ -204,15 +200,14 @@ If `rulesPaths` is not specified, the action will use default rulesets:
           ]
         }
       ]
-\`\`\`
+</code></pre>
 
 ### TypeScript Project
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
     file-types-config: |
       [
@@ -226,15 +221,14 @@ If `rulesPaths` is not specified, the action will use default rulesets:
           ]
         }
       ]
-\`\`\`
+</code></pre>
 
 ### PHP Project
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
     file-types-config: |
       [
@@ -248,15 +242,14 @@ If `rulesPaths` is not specified, the action will use default rulesets:
           ]
         }
       ]
-\`\`\`
+</code></pre>
 
 ### Salesforce Project
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "force-app/main/default/"
     installSalesforcePlugins: true
     file-types-config: |
@@ -298,7 +291,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
           ]
         }
       ]
-\`\`\`
+</code></pre>
 
 ## Differential Quality Enforcement
 
@@ -316,38 +309,34 @@ This approach helps teams gradually improve code quality without being overwhelm
 
 By default, the action uses differential enforcement with these settings:
 
-\`\`\`yaml
-strictNewFiles: true                         # Any violation in new files fails the check
+<pre><code class="language-yaml">strictNewFiles: true                         # Any violation in new files fails the check
 maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
 maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
-\`\`\`
+</code></pre>
 
 #### Strict Enforcement for All Files
 
 If you want to enforce the same strict rules for all files (both new and modified), use:
 
-\`\`\`yaml
-strictNewFiles: true                         # Any violation in new files fails the check
+<pre><code class="language-yaml">strictNewFiles: true                         # Any violation in new files fails the check
 maxViolationsForModifiedFiles: 0             # Allow zero violations in modified files (strict)
 maxCriticalViolationsForModifiedFiles: 0     # Allow zero critical violations in modified files
-\`\`\`
+</code></pre>
 
 #### Legacy Mode (Original Behavior)
 
 To revert to the original behavior without differential enforcement:
 
-\`\`\`yaml
-strictNewFiles: false                        # Don't apply special rules to new files
+<pre><code class="language-yaml">strictNewFiles: false                        # Don't apply special rules to new files
 maxCriticalViolations: 0                     # Maximum critical violations across all files
 maxMediumViolations: 10                      # Maximum medium violations across all files
-\`\`\`
+</code></pre>
 
 ## Using the Violations Output
 
 You can use the violations output in subsequent steps of your workflow:
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   id: code-scan
   uses: your-org/multi-code-scan-action@v1
   with:
@@ -356,19 +345,19 @@ You can use the violations output in subsequent steps of your workflow:
 - name: Process Violations
   if: always()
   run: |
-    echo "Total violations: ${{ "{{" }} steps.code-scan.outputs.total-violations }}"
-    echo "New file violations: ${{ "{{" }} steps.code-scan.outputs.new-file-violations }}"
-    echo "Modified file violations: ${{ "{{" }} steps.code-scan.outputs.modified-file-violations }}"
+    echo "Total violations: ${{ steps.code-scan.outputs.total-violations }}"
+    echo "New file violations: ${{ steps.code-scan.outputs.new-file-violations }}"
+    echo "Modified file violations: ${{ steps.code-scan.outputs.modified-file-violations }}"
     
     # Parse the violations JSON
-    VIOLATIONS='${{ "{{" }} steps.code-scan.outputs.violations }}'
+    VIOLATIONS='${{ steps.code-scan.outputs.violations }}'
     
     # Example: Count violations by file
     echo "$VIOLATIONS" | jq 'group_by(.file) | map({file: .[0].file, count: length}) | sort_by(.count) | reverse'
     
     # Example: Get all critical violations
     echo "$VIOLATIONS" | jq '[.[] | select(.severity == "critical")]'
-\`\`\`
+</code></pre>
 
 ## License
 
