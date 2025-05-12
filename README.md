@@ -38,7 +38,7 @@ jobs:
       - name: Run Code Quality Scan
         uses: your-org/multi-code-scan-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
           sourcePath: "src/"
           file-types-config: |
             [
@@ -71,7 +71,7 @@ For Salesforce projects, enable the Salesforce-specific plugins:
 - name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
     sourcePath: "force-app/main/default/"
     installSalesforcePlugins: true
     file-types-config: |
@@ -168,7 +168,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 - name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
     sourcePath: "src/main/java/"
     file-types-config: |
       [
@@ -190,7 +190,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 - name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
     file-types-config: |
       [
@@ -212,7 +212,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 - name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
     file-types-config: |
       [
@@ -234,7 +234,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 - name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
     sourcePath: "src/"
     file-types-config: |
       [
@@ -256,7 +256,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 - name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ "{{" }} secrets.GITHUB_TOKEN }}
     sourcePath: "force-app/main/default/"
     installSalesforcePlugins: true
     file-types-config: |
@@ -356,12 +356,12 @@ You can use the violations output in subsequent steps of your workflow:
 - name: Process Violations
   if: always()
   run: |
-    echo "Total violations: ${{ steps.code-scan.outputs.total-violations }}"
-    echo "New file violations: ${{ steps.code-scan.outputs.new-file-violations }}"
-    echo "Modified file violations: ${{ steps.code-scan.outputs.modified-file-violations }}"
+    echo "Total violations: ${{ "{{" }} steps.code-scan.outputs.total-violations }}"
+    echo "New file violations: ${{ "{{" }} steps.code-scan.outputs.new-file-violations }}"
+    echo "Modified file violations: ${{ "{{" }} steps.code-scan.outputs.modified-file-violations }}"
     
     # Parse the violations JSON
-    VIOLATIONS='${{ steps.code-scan.outputs.violations }}'
+    VIOLATIONS='${{ "{{" }} steps.code-scan.outputs.violations }}'
     
     # Example: Count violations by file
     echo "$VIOLATIONS" | jq 'group_by(.file) | map({file: .[0].file, count: length}) | sort_by(.count) | reverse'
