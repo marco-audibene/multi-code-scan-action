@@ -1,9 +1,8 @@
-const core = require("@actions/core")
 const exec = require("@actions/exec")
 const fs = require("fs").promises
 const path = require("path")
 const os = require("os")
-const { logSuccess, logWarning, logInfo } = require("../utils/logger")
+const { logWarning, logInfo } = require("../utils/logger")
 const formatter = require("../utils/formatter")
 
 /**

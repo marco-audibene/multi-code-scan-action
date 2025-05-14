@@ -1,11 +1,5 @@
-const core = require("@actions/core")
 const github = require("@actions/github")
 const { exec } = require("@actions/exec")
-const fs = require("fs").promises
-const path = require("path")
-const glob = require("glob")
-const util = require("util")
-const { logInfo, logSuccess } = require("./logger")
 
 /**
  * Gets files changed in the PR that match the sourcePath

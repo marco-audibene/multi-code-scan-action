@@ -3,8 +3,7 @@ const exec = require("@actions/exec")
 const tc = require("@actions/tool-cache")
 const path = require("path")
 const fs = require("fs").promises
-const fsSync = require("fs")
-const { logSuccess, logWarning, logInfo, logSectionHeader, logSubsectionHeader } = require("./logger")
+const { logSuccess, logWarning, logInfo, logSubsectionHeader } = require("./logger")
 
 /**
  * Installs PMD and ESLint with required plugins
@@ -43,14 +42,7 @@ async function installPMD() {
   core.addPath(pmdBinPath)
 
   // Verify installation
-  let pmdVersionOutput = ""
-  await exec.exec("pmd", ["--version"], {
-    listeners: {
-      stdout: (data) => {
-        pmdVersionOutput += data.toString()
-      },
-    },
-  })
+  await exec.exec("pmd", ["--version"])
 
   logSuccess(`PMD ${pmdVersion} installed successfully`)
 }

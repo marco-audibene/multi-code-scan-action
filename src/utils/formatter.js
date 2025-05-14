@@ -1,7 +1,7 @@
 const core = require("@actions/core")
 const fs = require("fs").promises
 const path = require("path")
-const { logSuccess, logWarning, logInfo, colors } = require("./logger")
+const { logWarning, logInfo, colors } = require("./logger")
 
 // Store project root path for normalization
 let projectRootPath = ""
@@ -105,6 +105,11 @@ async function cleanupTempFiles(filePaths) {
  */
 function normalizeFilePath(filePath, sourcePath) {
   if (!filePath) return filePath
+
+  // Use projectRootPath if available and no sourcePath is provided
+  if (!sourcePath && projectRootPath) {
+    sourcePath = projectRootPath
+  }
 
   // Remove common CI workspace prefixes
   const workspacePrefixes = ["/home/runner/work/", "/github/workspace/", "/workspace/", "/app/", "/src/"]
