@@ -3,7 +3,7 @@ const exec = require("@actions/exec")
 const fs = require("fs").promises
 const path = require("path")
 const os = require("os")
-const { logSuccess, logWarning, logInfo } = require("../utils/logger")
+const { logWarning, logInfo } = require("../utils/logger")
 const formatter = require("../utils/formatter")
 
 /**
@@ -95,7 +95,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Add files to scan
   eslintArgs.push(...filesToScan)
 
-  let stdout = ""
+  // let stdout = ""
   let stderr = ""
 
   // Run ESLint
@@ -103,8 +103,8 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     ignoreReturnCode: true,
     silent: true, // Hide command output
     listeners: {
-      stdout: (data) => {
-        stdout += data.toString()
+      stdout: () => {
+        // We're not using stdout data
       },
       stderr: (data) => {
         stderr += data.toString()
