@@ -69,6 +69,23 @@ describe("files", () => {
       expect(result.modifiedFiles).toContain("src/dir2/file2.js")
       expect(result.filteredFiles).toHaveLength(2)
     })
+
+    it("should handle single-level glob patterns in sourcePath", async () => {
+      const mockFiles = [
+        { filename: "src/file1.js", status: "added" },
+        { filename: "src/dir/file2.js", status: "modified" }, // Should be filtered out with single-level glob
+        { filename: "test/file3.js", status: "added" }, // Should be filtered out
+      ]
+
+      github.getOctokit().rest.pulls.listFiles.mockResolvedValueOnce({ data: mockFiles })
+
+      const result = await files.getChangedFiles("token", "src/*")
+
+      expect(result.totalFiles).toBe(3)
+      expect(result.newFiles).toContain("src/file1.js")
+      expect(result.newFiles).not.toContain("src/dir/file2.js") // Should be filtered out
+      expect(result.filteredFiles).toHaveLength(1)
+    })
   })
 
   describe("getAllFiles", () => {
@@ -102,6 +119,21 @@ describe("files", () => {
       expect(result.filteredFiles).toContain("src/dir1/file1.js")
       expect(result.filteredFiles).toContain("src/dir2/file2.js")
     })
+
+    it("should handle single-level glob patterns in sourcePath", async () => {
+      // Mock git ls-files output
+      exec.mockImplementationOnce((cmd, args, options) => {
+        options.listeners.stdout("src/file1.js\nsrc/dir/file2.js\ntest/file3.js")
+        return Promise.resolve(0)
+      })
+
+      const result = await files.getAllFiles("src/*")
+
+      expect(result.totalFiles).toBe(3)
+      expect(result.filteredFiles).toHaveLength(1)
+      expect(result.filteredFiles).toContain("src/file1.js")
+      expect(result.filteredFiles).not.toContain("src/dir/file2.js") // Should be filtered out
+    })
   })
 
   describe("filterFilesByType", () => {
@@ -125,6 +157,30 @@ describe("files", () => {
       expect(result).toContain("src/file2.jsx")
       expect(result).not.toContain("src/file3.css")
       expect(result).not.toContain("test/file4.js")
+    })
+
+    it("should handle empty file lists", () => {
+      const fileType = {
+        sourcePath: "src/",
+        fileExtensions: [".js"],
+      }
+
+      const result = files.filterFilesByType(fileType, [])
+
+      expect(result).toHaveLength(0)
+    })
+
+    it("should handle empty file extensions", () => {
+      const fileType = {
+        sourcePath: "src/",
+        fileExtensions: [],
+      }
+
+      const allFiles = ["src/file1.js", "src/file2.jsx"]
+
+      const result = files.filterFilesByType(fileType, allFiles)
+
+      expect(result).toHaveLength(0)
     })
   })
 })
