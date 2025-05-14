@@ -1,14 +1,14 @@
 {
-  "name": "salesforce-code-quality-action",
+  "name": "multi-code-scan-action",
   "version": "1.0.0",
-  "description": "GitHub Action for Salesforce code quality checks",
+  "description": "GitHub Action for code quality checks using PMD and ESLint",
   "main": "index.js",
   "scripts": {
     "build": "ncc build src/index.js -o dist --source-map --license licenses.txt",
     "test": "jest",
     "lint": "eslint src/**/*.js"
   },
-  "keywords": ["github", "actions", "salesforce", "code-quality", "pmd", "eslint"],
+  "keywords": ["github", "actions", "code-quality", "pmd", "eslint"],
   "author": "Your Organization",
   "license": "MIT",
   "dependencies": {
