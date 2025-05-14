@@ -6,6 +6,8 @@
   "scripts": {
     "build": "ncc build src/index.js -o dist --source-map --license licenses.txt",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.js"
   },
   "keywords": ["github", "actions", "code-quality", "pmd", "eslint"],

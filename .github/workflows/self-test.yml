@@ -1,3 +1,20 @@
+# Self-Test Workflow
+#
+# Purpose:
+# This workflow runs the action against its own codebase ("dogfooding").
+# It verifies that the action can successfully:
+#   1. Install required tools (ESLint)
+#   2. Scan JavaScript files in the src/ directory
+#   3. Detect code quality violations
+#   4. Report results
+#
+# When it runs:
+# - On push to main branch (except for documentation changes)
+# - On pull requests targeting main branch
+#
+# This is different from unit tests (npm test) which verify the internal
+# functionality of the code. This workflow tests the action as a whole.
+
 name: Self Test
 
 on:
@@ -63,7 +80,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
+      
       # No Node.js setup needed here - the action handles it internally
       
       - name: Download built dist
@@ -72,6 +89,8 @@ jobs:
           name: dist
           path: dist/
 
+      # This is the key step - running the action on its own codebase
+      # It demonstrates that the action works and can detect issues
       - name: Run action on itself
         uses: ./
         with:
