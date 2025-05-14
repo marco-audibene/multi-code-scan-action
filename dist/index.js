@@ -35305,8 +35305,8 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     ignoreReturnCode: true,
     silent: true, // Hide command output
     listeners: {
-      stdout: (data) => {
-        // stdout += data.toString()
+      stdout: () => {
+        // We're not using stdout data
       },
       stderr: (data) => {
         stderr += data.toString()
