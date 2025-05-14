@@ -1,3 +1,23 @@
+# Unit Tests Workflow
+#
+# Purpose:
+# This workflow runs the Jest unit tests that verify the internal functionality
+# of the code. These tests ensure that individual functions and modules work
+# correctly in isolation.
+#
+# Unlike the self-test.yml workflow (which runs the action against its own code),
+# these tests verify the logic of the code itself, including:
+#   1. Configuration parsing
+#   2. File handling
+#   3. Analysis logic
+#   4. Reporting functionality
+#
+# When it runs:
+# - On push to main branch (except for documentation changes)
+# - On pull requests targeting main branch
+#
+# Coverage reports are uploaded as artifacts for review.
+
 name: Test
 
 on:
@@ -26,9 +46,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Run Jest unit tests to verify code functionality
       - name: Run tests
         run: npm test
 
+      # Upload coverage report for review
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
