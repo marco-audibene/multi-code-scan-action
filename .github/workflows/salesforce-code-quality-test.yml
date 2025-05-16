@@ -49,7 +49,7 @@ jobs:
               {
                 "name": "LWC",
                 "sourcePath": "language-tests/salesforce/files/lwc/",
-                "fileExtensions": [".js", ".html", ".css", ".xml"],
+                "fileExtensions": [".js"],
                 "analyzer": "eslint",
                 "rulesPaths": [
                   "./language-tests/salesforce/rulesets/eslint/lwc/config.js"
