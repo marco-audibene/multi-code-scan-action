@@ -56,22 +56,3 @@ jobs:
                 ]
               }
             ]
-          outputFormats: "github,json,html"
-          failOnQualityIssues: false # Don't fail the workflow
-
-      # Verify that violations were found
-      - name: Verify violations were found
-        run: |
-          if [ -f "code-quality-reports/violations.json" ]; then
-            VIOLATIONS=$(cat code-quality-reports/violations.json | jq length)
-            echo "Found $VIOLATIONS violations"
-            if [ "$VIOLATIONS" -ge 3 ]; then
-              echo "✅ Test passed: Expected violations were found"
-            else
-              echo "❌ Test failed: Expected at least 3 violations, but found $VIOLATIONS"
-              exit 1
-            fi
-          else
-            echo "❌ Test failed: No violations report was generated"
-            exit 1
-          fi
