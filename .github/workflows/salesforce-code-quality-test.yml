@@ -1,0 +1,110 @@
+# Salesforce Integration Test Workflow
+#
+# Purpose:
+# This workflow tests the action against sample Salesforce code files using custom rulesets.
+# It uses test files from the language-tests/salesforce/files directory and 
+# rulesets from the language-tests/salesforce/rulesets directory.
+#
+# The test files contain intentional code quality issues that should be detected by the action.
+
+name: Salesforce Integration Test
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  pull_request:
+    branches: [ main ]
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  integration-test:
+    name: Run Action on Salesforce Test Files
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Download built dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # Run the action against the test Salesforce files
+      - name: Run action on Salesforce test files
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "language-tests/salesforce/files/"
+          installSalesforcePlugins: true
+          file-types-config: |
+            [
+              {
+                "name": "Apex class",
+                "sourcePath": "language-tests/salesforce/files/classes/",
+                "fileExtensions": [".cls", ".cls-meta.xml"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/salesforce/rulesets/pmd/apex/ruleset.xml"
+                ]
+              },
+              {
+                "name": "LWC",
+                "sourcePath": "language-tests/salesforce/files/lwc/",
+                "fileExtensions": [".js", ".html", ".css", ".xml"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./language-tests/salesforce/rulesets/eslint/lwc/config.js"
+                ]
+              }
+            ]
+          outputFormats: "github,json,html"
+          failOnQualityIssues: false # Don't fail the workflow
+
+      # Verify that violations were found
+      - name: Verify violations were found
+        run: |
+          if [ -f "code-quality-reports/violations.json" ]; then
+            VIOLATIONS=$(cat code-quality-reports/violations.json | jq length)
+            echo "Found $VIOLATIONS violations"
+            if [ "$VIOLATIONS" -ge 3 ]; then
+              echo "✅ Test passed: Expected violations were found"
+            else
+              echo "❌ Test failed: Expected at least 3 violations, but found $VIOLATIONS"
+              exit 1
+            fi
+          else
+            echo "❌ Test failed: No violations report was generated"
+            exit 1
+          fi
