@@ -1,7 +1,20 @@
+/**
+ * https://github.com/salesforce/eslint-plugin-lwc/tree/v2.2.0
+ */
 module.exports = {
-  extends: ["@salesforce/eslint-config-lwc/recommended"],
+  parser: "@babel/eslint-parser",
+  parserOptions: {
+    requireConfigFile: false,
+    babelOptions: {
+      parserOpts: {
+        plugins: ["classProperties", ["decorators", { decoratorsBeforeExport: false }]],
+      },
+    },
+  },
+
+  plugins: ["@lwc/eslint-plugin-lwc"],
   rules: {
-    "no-console": "error",
+    "no-console": ["warn", { allow: ["error"] }],
     "no-eval": "error",
     "no-unused-vars": "error",
   },
