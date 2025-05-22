@@ -13,10 +13,17 @@
 		language="xml"
 		message="Custom fields should have a description."
 		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+		externalInfoUrl="https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/customfield.htm"
 	>
     <description>
         Ensures that custom fields have a description for better documentation.
         Applies to all custom fields (ending with "__c"), regardless of the object type.
+        
+        Field descriptions are important for:
+        - Providing context to administrators
+        - Documenting the purpose of the field
+        - Improving the user experience when viewing field details
+        - Supporting better change management
     </description>
     <priority>1</priority>
     <properties>
