@@ -8,46 +8,57 @@ This directory contains test files and rulesets for Salesforce technologies.
 salesforce/
 ├── files/
 │   ├── classes/
-│   │   └── [Apex classes with intentional violations]
+│   │   ├── TestController.cls
+│   │   └── TestController.cls-meta.xml
 │   ├── lwc/
-│   │   └── [LWC components with intentional violations]
+│   │   ├── testComponent/
+│   │   │   ├── testComponent.js
+│   │   │   ├── testComponent.html
+│   │   │   └── testComponent.js-meta.xml
+│   ├── objects/
+│   │   └── TestObject__c/
+│   │       ├── TestObject__c.object-meta.xml
+│   │       └── fields/
+│   │           └── TestField__c.field-meta.xml
 │   └── aura/
-│       └── [Aura components with intentional violations]
+│       └── [placeholder for Aura components]
 └── rulesets/
     ├── pmd/
     │   ├── apex/
-    │   │   └── [PMD rulesets for Apex]
+    │   │   └── ruleset.xml
     │   └── xml/
-    │       └── [PMD rulesets for XML]
+    │       └── field-ruleset.xml
     └── eslint/
         ├── lwc/
-        │   └── [ESLint configs for LWC]
+        │   └── standard-ruleset.js
         └── aura/
-            └── [ESLint configs for Aura]
+            └── [placeholder for Aura ESLint configurations]
 \`\`\`
 
 ## Test Files
 
-The test files contain intentional code quality issues that should be detected by the action.
+The test files contain intentional code quality issues that should be detected by the action:
+
+### Apex Classes
+- `TestController.cls`: Contains SOQL in a loop and unused variables
+
+### Lightning Web Components (LWC)
+- `testComponent.js`: Contains console.log statements and eval usage
+
+### Salesforce Metadata
+- `TestField__c.field-meta.xml`: Missing field description
 
 ## Rulesets
 
-The rulesets are configured to detect common code quality issues in Salesforce code.
-\`\`\`
+### PMD Rulesets
+- `apex/ruleset.xml`: Standard rules for Apex code quality
+- `xml/field-ruleset.xml`: Rules for validating field metadata (checks for missing descriptions)
 
-```apex file="language-tests/salesforce/files/classes/TestController.cls"
-public with sharing class TestController {
-    // Violation: Unused variable
-    private String unusedVar;
-    
-    // Violation: Method too long
-    public static List<Account> getAccounts() {
-        // Violation: SOQL in loop
-        List<Account> accounts = new List<Account>();
-        for (Contact c : [SELECT Id FROM Contact LIMIT 10]) {
-            List<Account> relatedAccounts = [SELECT Id, Name FROM Account WHERE Id = :c.AccountId];
-            accounts.addAll(relatedAccounts);
-        }
-        return accounts;
-    }
-}
+### ESLint Rulesets
+- `lwc/standard-ruleset.js`: Standard rules for Lightning Web Components
+
+## Running Tests
+
+These tests are run using the `salesforce-code-quality-test.yml` workflow, which executes the multi-code-scan-action against these test files using the provided rulesets.
+
+The action should detect the intentional violations in each file type and report them as annotations in GitHub.
