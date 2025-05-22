@@ -38,7 +38,7 @@ jobs:
           file-types-config: |
             [
               {
-                "name": "Apex class",
+                "name": "Classes",
                 "sourcePath": "language-tests/salesforce/files/classes/",
                 "fileExtensions": [".cls", ".cls-meta.xml"],
                 "analyzer": "pmd",
@@ -52,7 +52,16 @@ jobs:
                 "fileExtensions": [".js"],
                 "analyzer": "eslint",
                 "rulesPaths": [
-                  "./language-tests/salesforce/rulesets/eslint/lwc/config.js"
+                  "./language-tests/salesforce/rulesets/eslint/lwc/standard-ruleset.js"
+                ]
+              },
+              {
+                "name": "Fields",
+                "sourcePath": "language-tests/salesforce/files/objects/",
+                "fileExtensions": [".field-meta.xml"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/salesforce/rulesets/pmd/xml/field-ruleset.xml"
                 ]
               }
             ]

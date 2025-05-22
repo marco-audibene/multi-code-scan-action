@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ruleset
+	name="Salesforce Field Metadata Rules"
+	xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd"
+>
+<description>PMD ruleset for Salesforce Field metadata XML files</description>
+
+<!-- Custom rules for field metadata -->
+<rule
+		name="RequireFieldDescription"
+		language="xml"
+		message="Custom fields should have a description."
+		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+	>
+    <description>
+        Ensures that custom fields have a description for better documentation.
+        Applies to all custom fields (ending with "__c"), regardless of the object type.
+    </description>
+    <priority>1</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+              <![CDATA[
+                //CustomField[
+                    not(description) and 
+                    fullName/text[ends-with(@Text, '__c')]
+                ]
+                ]]>
+            </value>
+        </property>
+    </properties>
+</rule>
+</ruleset>
