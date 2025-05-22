@@ -1,0 +1,67 @@
+# Salesforce Code Quality Test Workflow
+#
+# Purpose:
+# This workflow tests the action against sample Salesforce code files using custom rulesets.
+# It uses test files from the language-tests/salesforce/files directory and 
+# rulesets from the language-tests/salesforce/rulesets directory.
+#
+# The test files contain intentional code quality issues that should be detected by the action.
+
+name: Salesforce Code Quality Test
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  pull_request:
+    branches: [ main ]
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  code-quality-test:
+    name: Run Action on Salesforce Test Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # Run the action against the test Salesforce files
+      - name: Run action on Salesforce test files
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "language-tests/salesforce/files/"
+          installSalesforcePlugins: true
+          file-types-config: |
+            [
+              {
+                "name": "Classes",
+                "sourcePath": "language-tests/salesforce/files/classes/",
+                "fileExtensions": [".cls", ".cls-meta.xml"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/salesforce/rulesets/pmd/apex/ruleset.xml"
+                ]
+              },
+              {
+                "name": "LWC",
+                "sourcePath": "language-tests/salesforce/files/lwc/",
+                "fileExtensions": [".js"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./language-tests/salesforce/rulesets/eslint/lwc/standard-ruleset.js"
+                ]
+              },
+              {
+                "name": "Fields",
+                "sourcePath": "language-tests/salesforce/files/objects/",
+                "fileExtensions": [".field-meta.xml"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/salesforce/rulesets/pmd/xml/field-ruleset.xml"
+                ]
+              }
+            ]
