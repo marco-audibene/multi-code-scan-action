@@ -56,6 +56,15 @@ jobs:
                 ]
               },
               {
+                "name": "Aura",
+                "sourcePath": "language-tests/salesforce/files/aura/",
+                "fileExtensions": [".js"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./language-tests/salesforce/rulesets/eslint/aura/standard-ruleset.js"
+                ]
+              },
+              {
                 "name": "Fields",
                 "sourcePath": "language-tests/salesforce/files/objects/",
                 "fileExtensions": [".field-meta.xml"],
