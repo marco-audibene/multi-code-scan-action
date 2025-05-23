@@ -35,6 +35,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sourcePath: "language-tests/salesforce/files/"
           installSalesforcePlugins: true
+          # Explicit differential enforcement settings (these are the defaults)
+          strictNewFiles: true                         # Any violation in new files fails the check
+          maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
+          maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
           file-types-config: |
             [
               {
