@@ -1,5 +1,5 @@
 /**
- * https://github.com/salesforce/eslint-plugin-aura/tree/master
+ * https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules
  */
 module.exports = {
     parser: "@babel/eslint-parser",

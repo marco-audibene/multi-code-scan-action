@@ -168,10 +168,10 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
           docUrl = `https://eslint.org/docs/latest/rules/${message.ruleId}`
         } else if (message.ruleId && message.ruleId.startsWith("@lwc/lwc/")) {
           const ruleName = message.ruleId.replace("@lwc/lwc/", "")
-          docUrl = `https://github.com/salesforce/eslint-plugin-lwc/blob/master/docs/rules/${ruleName}.md`
+          docUrl = `https://github.com/salesforce/eslint-plugin-lwc/tree/master/docs/rules/${ruleName}.md`
         } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
           const ruleName = message.ruleId.replace("@salesforce/aura/", "")
-          docUrl = `https://github.com/salesforce/eslint-plugin-aura/blob/master/docs/rules/${ruleName}.md`
+          docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
         }
         return docUrl
       },
@@ -199,10 +199,10 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
             docUrl = `https://eslint.org/docs/latest/rules/${message.ruleId}`
           } else if (message.ruleId && message.ruleId.startsWith("@lwc/lwc/")) {
             const ruleName = message.ruleId.replace("@lwc/lwc/", "")
-            docUrl = `https://github.com/salesforce/eslint-plugin-lwc/blob/master/docs/rules/${ruleName}.md`
+            docUrl = `https://github.com/salesforce/eslint-plugin-lwc/tree/master/docs/rules/${ruleName}.md`
           } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
             const ruleName = message.ruleId.replace("@salesforce/aura/", "")
-            docUrl = `https://github.com/salesforce/eslint-plugin-aura/blob/master/docs/rules/${ruleName}.md`
+            docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
           }
 
           violations.push({
