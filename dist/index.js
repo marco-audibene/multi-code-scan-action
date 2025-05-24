@@ -35242,13 +35242,13 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
 
     if (installTypeScriptPlugins) {
-      // Check for TypeScript files first
+      // Check for TypeScript files first - USE .js EXTENSION FOR FLAT CONFIG
       if (name.toLowerCase().includes("typescript") || name.toLowerCase().includes("tsx")) {
-        configPath = "standard-tsx-config.json"
+        configPath = "standard-tsx-config.js"
       } else if (name.toLowerCase().includes("ts") || fileType.fileExtensions.some((ext) => ext === ".ts")) {
-        configPath = "standard-ts-config.json"
+        configPath = "standard-ts-config.js"
       } else if (fileType.fileExtensions.some((ext) => ext === ".tsx")) {
-        configPath = "standard-tsx-config.json"
+        configPath = "standard-tsx-config.js"
       }
     }
 
@@ -35298,7 +35298,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
 
     if (installTypeScriptPlugins) {
-      logInfo("TypeScript plugins detected - skipping --no-eslintrc flag (flat config mode)")
+      logInfo("TypeScript plugins detected - using flat config mode (no --no-eslintrc flag)")
     } else {
       // Only add --no-eslintrc for non-TypeScript runs
       eslintArgs.push("--no-eslintrc")
