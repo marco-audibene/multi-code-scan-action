@@ -6,7 +6,7 @@ module.exports = [
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
-      parser: require("@typescript-eslint/parser"),
+      parser: "@typescript-eslint/parser", // Use string reference instead of require()
       parserOptions: {
         ecmaVersion: 2021,
         sourceType: "module",
@@ -31,7 +31,7 @@ module.exports = [
       },
     },
     plugins: {
-      "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
+      "@typescript-eslint": "@typescript-eslint/eslint-plugin", // Use string reference instead of require()
     },
     rules: {
       // Enhanced rules for better testing coverage
