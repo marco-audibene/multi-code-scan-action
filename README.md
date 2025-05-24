@@ -12,7 +12,7 @@ A GitHub Action for running code quality checks using PMD and ESLint. This actio
 - Generates reports in multiple formats (GitHub annotations, JSON, HTML, text)
 - Configurable violation thresholds
 - Supports baseline comparison to focus on new issues
-- **Differential quality enforcement**: Stricter rules for new files, more lenient for modified files
+- **Three quality enforcement modes**: Absolutist (default), Differential, and Legacy
 
 ## Usage
 
@@ -95,6 +95,67 @@ For Salesforce projects, enable the Salesforce-specific plugins:
       ]
 </code></pre>
 
+## Quality Enforcement Modes
+
+This action supports three different quality enforcement approaches:
+
+### 1. Absolutist Approach (Default)
+
+Applies the same strict rules to all files, both new and modified. This is the most conservative approach and behaves similarly to the standard PMD GitHub Action.
+
+<pre><code class="language-yaml">- name: Run Code Quality Scan (Absolutist - Default)
+  uses: your-org/multi-code-scan-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    sourcePath: "src/"
+    # These are the default values (can be omitted)
+    strictNewFiles: true                         # Any violation in new files fails the check
+    maxViolationsForModifiedFiles: 0             # Allow zero violations in modified files (strict)
+    maxCriticalViolationsForModifiedFiles: 0     # Allow zero critical violations in modified files
+    file-types-config: |
+      [...]
+</code></pre>
+
+**When to use**: New projects, teams with high quality standards, or when you want consistent rules across all code.
+
+### 2. Differential Enforcement
+
+Applies strict rules to new files while being more lenient with modified files. This helps teams gradually improve code quality without being overwhelmed by legacy issues.
+
+<pre><code class="language-yaml">- name: Run Code Quality Scan (Differential)
+  uses: your-org/multi-code-scan-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    sourcePath: "src/"
+    # Differential enforcement settings
+    strictNewFiles: true                         # Any violation in new files fails the check
+    maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
+    maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
+    file-types-config: |
+      [...]
+</code></pre>
+
+**When to use**: Legacy projects, teams transitioning to higher quality standards, or when you want to prevent new technical debt while tolerating existing issues.
+
+### 3. Legacy Mode
+
+Uses overall violation thresholds without distinguishing between new and modified files. This reverts to the original behavior.
+
+<pre><code class="language-yaml">- name: Run Code Quality Scan (Legacy)
+  uses: your-org/multi-code-scan-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    sourcePath: "src/"
+    # Legacy mode settings
+    strictNewFiles: false                        # Don't apply special rules to new files
+    maxCriticalViolations: 0                     # Maximum critical violations across all files
+    maxMediumViolations: 10                      # Maximum medium violations across all files
+    file-types-config: |
+      [...]
+</code></pre>
+
+**When to use**: When you want simple, overall thresholds without file-type distinction.
+
 ## Inputs
 
 | Name | Description | Required | Default |
@@ -111,7 +172,7 @@ For Salesforce projects, enable the Salesforce-specific plugins:
 | `failOnQualityIssues` | Whether to fail the workflow if quality issues exceed thresholds | No | `true` |
 | `check-name` | Name of the check run to create | No | `Code Quality Scan` |
 | `strictNewFiles` | Whether to apply strict rules to new files (any violation fails) | No | `true` |
-| `maxViolationsForModifiedFiles` | Maximum number of violations allowed for modified files before failing | No | `10` |
+| `maxViolationsForModifiedFiles` | Maximum number of violations allowed for modified files before failing | No | `0` |
 | `maxCriticalViolationsForModifiedFiles` | Maximum number of critical/high violations allowed for modified files before failing | No | `0` |
 | `installSalesforcePlugins` | Whether to install Salesforce-specific ESLint plugins | No | `false` |
 
@@ -244,7 +305,7 @@ If `rulesPaths` is not specified, the action will use default rulesets:
       ]
 </code></pre>
 
-### Salesforce Project
+### Salesforce Project (Differential Enforcement)
 
 <pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
@@ -252,6 +313,10 @@ If `rulesPaths` is not specified, the action will use default rulesets:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sourcePath: "force-app/main/default/"
     installSalesforcePlugins: true
+    # Use differential enforcement for legacy Salesforce projects
+    strictNewFiles: true                         # Any violation in new files fails the check
+    maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
+    maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
     file-types-config: |
       [
         {
@@ -291,45 +356,6 @@ If `rulesPaths` is not specified, the action will use default rulesets:
           ]
         }
       ]
-</code></pre>
-
-## Differential Quality Enforcement
-
-This action supports differential quality enforcement, which allows you to:
-
-1. **Apply strict rules to new files**: By default, any violation in a new file will cause the check to fail. This ensures that new code adheres to all quality standards.
-
-2. **Be more lenient with modified files**: For files that are being modified (not newly created), you can set higher thresholds for violations. This acknowledges the reality of working with legacy code while still encouraging improvement.
-
-This approach helps teams gradually improve code quality without being overwhelmed by fixing all legacy issues at once.
-
-### Configuration Examples
-
-#### Default Configuration (Differential Enforcement)
-
-By default, the action uses differential enforcement with these settings:
-
-<pre><code class="language-yaml">strictNewFiles: true                         # Any violation in new files fails the check
-maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
-maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
-</code></pre>
-
-#### Strict Enforcement for All Files
-
-If you want to enforce the same strict rules for all files (both new and modified), use:
-
-<pre><code class="language-yaml">strictNewFiles: true                         # Any violation in new files fails the check
-maxViolationsForModifiedFiles: 0             # Allow zero violations in modified files (strict)
-maxCriticalViolationsForModifiedFiles: 0     # Allow zero critical violations in modified files
-</code></pre>
-
-#### Legacy Mode (Original Behavior)
-
-To revert to the original behavior without differential enforcement:
-
-<pre><code class="language-yaml">strictNewFiles: false                        # Don't apply special rules to new files
-maxCriticalViolations: 0                     # Maximum critical violations across all files
-maxMediumViolations: 10                      # Maximum medium violations across all files
 </code></pre>
 
 ## Using the Violations Output

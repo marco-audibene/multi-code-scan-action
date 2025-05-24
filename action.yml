@@ -51,7 +51,7 @@ inputs:
   maxViolationsForModifiedFiles:
     description: 'Maximum number of violations allowed for modified files before failing'
     required: false
-    default: '10'
+    default: '0'
   maxCriticalViolationsForModifiedFiles:
     description: 'Maximum number of critical/high violations allowed for modified files before failing'
     required: false

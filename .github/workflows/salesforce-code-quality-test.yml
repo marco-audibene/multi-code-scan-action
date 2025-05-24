@@ -35,10 +35,16 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sourcePath: "language-tests/salesforce/files/"
           installSalesforcePlugins: true
-          # Explicit differential enforcement settings (these are the defaults)
+          
+          # Differential Enforcement Settings (our current defaults - explicitly set for clarity)
           strictNewFiles: true                         # Any violation in new files fails the check
           maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
           maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
+          failOnQualityIssues: true                    # Fail the workflow if quality thresholds are exceeded
+          
+          # File scanning strategy
+          scanChangedFilesOnly: true                   # Only scan changed files (enables differential enforcement)
+          
           file-types-config: |
             [
               {
