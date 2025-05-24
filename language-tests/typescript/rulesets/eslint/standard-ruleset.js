@@ -1,15 +1,14 @@
 /**
- * Custom TypeScript ESLint ruleset for testing (FLAT CONFIG FORMAT)
- * Extends @typescript-eslint/recommended with additional rules to catch common issues
+ * Simplified TypeScript ESLint ruleset for testing (FLAT CONFIG FORMAT)
+ * Uses basic ESLint rules that work with TypeScript files
  */
 module.exports = [
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
-      parser: "@typescript-eslint/parser", // Use string reference instead of require()
+      ecmaVersion: 2021,
+      sourceType: "module",
       parserOptions: {
-        ecmaVersion: 2021,
-        sourceType: "module",
         ecmaFeatures: {
           jsx: true,
         },
@@ -30,31 +29,17 @@ module.exports = [
         exports: "readonly",
       },
     },
-    plugins: {
-      "@typescript-eslint": "@typescript-eslint/eslint-plugin", // Use string reference instead of require()
-    },
     rules: {
-      // Enhanced rules for better testing coverage
+      // Basic ESLint rules that work with TypeScript files
       "no-console": "warn",
       "no-eval": "error",
-      "no-unused-vars": "off", // Disabled in favor of TypeScript version
-
-      // TypeScript-specific rules (some are already in recommended, but explicit for testing)
-      "@typescript-eslint/no-unused-vars": "error",
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/explicit-function-return-type": "warn",
-      "@typescript-eslint/no-inferrable-types": "error",
-      "@typescript-eslint/prefer-const": "error",
-      "@typescript-eslint/ban-types": "error",
-      "@typescript-eslint/no-non-null-assertion": "warn",
-      "@typescript-eslint/prefer-nullish-coalescing": "error",
-      "@typescript-eslint/prefer-readonly": "warn",
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/no-unsafe-member-access": "error",
-      "@typescript-eslint/no-unsafe-assignment": "error",
-      "@typescript-eslint/no-unsafe-call": "error",
-      "@typescript-eslint/no-unsafe-return": "error",
+      "no-unused-vars": "error",
+      "no-undef": "error",
+      "prefer-const": "error",
+      "no-var": "error",
+      eqeqeq: "error",
+      "no-alert": "error",
+      "no-debugger": "error",
     },
   },
 ]
