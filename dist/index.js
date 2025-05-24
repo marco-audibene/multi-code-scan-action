@@ -35269,22 +35269,6 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     logInfo(`Using standard configuration: ${configPath}`)
   }
 
-  // DEBUG: Check if config file exists and log its contents
-  try {
-    const configExists = await fs
-      .access(configPath)
-      .then(() => true)
-      .catch(() => false)
-    if (configExists) {
-      const configContent = await fs.readFile(configPath, "utf8")
-      logInfo(`Config file ${configPath} exists. Content preview: ${configContent.substring(0, 200)}...`)
-    } else {
-      logWarning(`Config file ${configPath} does not exist!`)
-    }
-  } catch (error) {
-    logWarning(`Error checking config file: ${error.message}`)
-  }
-
   const violations = []
 
   // Create a temporary file list for ESLint
@@ -35308,7 +35292,18 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
 
   // Add config if specified
   if (configPath) {
-    eslintArgs.push("--config", configPath, "--no-eslintrc")
+    eslintArgs.push("--config", configPath)
+
+    // ENHANCED: Check if TypeScript plugins are installed (they trigger flat config mode)
+    const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
+
+    if (installTypeScriptPlugins) {
+      logInfo("TypeScript plugins detected - skipping --no-eslintrc flag (flat config mode)")
+    } else {
+      // Only add --no-eslintrc for non-TypeScript runs
+      eslintArgs.push("--no-eslintrc")
+      logInfo("Added --no-eslintrc flag")
+    }
   }
 
   // Enable caching if requested
@@ -35336,7 +35331,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Run ESLint
   const options = {
     ignoreReturnCode: true,
-    silent: false, // CHANGED: Show command output for debugging
+    silent: true, // Back to silent for cleaner output
     listeners: {
       stdout: (data) => {
         stdout += data.toString()
@@ -35351,18 +35346,12 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     const exitCode = await exec.exec("npx", eslintArgs, options)
     logInfo(`ESLint exit code: ${exitCode}`)
 
-    // Log stdout and stderr for debugging
-    if (stdout) {
-      logInfo(`ESLint stdout: ${stdout}`)
-    }
-    if (stderr) {
+    // Only log stderr if there's an error
+    if (stderr && exitCode !== 0) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
   } catch (error) {
     logWarning(`ESLint execution error: ${error.message}`)
-    if (stdout) {
-      logInfo(`ESLint stdout: ${stdout}`)
-    }
     if (stderr) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
@@ -35388,7 +35377,6 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     eslintResult = JSON.parse(resultContent)
   } catch (error) {
     logWarning(`Failed to parse ESLint results: ${error.message}`)
-    logInfo(`Result content: ${resultContent}`)
     eslintResult = []
   }
 
