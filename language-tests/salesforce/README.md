@@ -15,13 +15,16 @@ salesforce/
 │   │   │   ├── testComponent.js
 │   │   │   ├── testComponent.html
 │   │   │   └── testComponent.js-meta.xml
-│   ├── objects/
-│   │   └── TestObject__c/
-│   │       ├── TestObject__c.object-meta.xml
-│   │       └── fields/
-│   │           └── TestField__c.field-meta.xml
-│   └── aura/
-│       └── [placeholder for Aura components]
+│   ├── aura/
+│   │   └── testAuraComponent/
+│   │       ├── testAuraComponent.cmp
+│   │       ├── testAuraComponent.cmp-meta.xml
+│   │       └── testAuraComponentController.js
+│   └── objects/
+│       └── TestObject__c/
+│           ├── TestObject__c.object-meta.xml
+│           └── fields/
+│               └── TestField__c.field-meta.xml
 └── rulesets/
     ├── pmd/
     │   ├── apex/
@@ -32,7 +35,7 @@ salesforce/
         ├── lwc/
         │   └── standard-ruleset.js
         └── aura/
-            └── [placeholder for Aura ESLint configurations]
+            └── standard-ruleset.js
 \`\`\`
 
 ## Test Files
@@ -45,6 +48,9 @@ The test files contain intentional code quality issues that should be detected b
 ### Lightning Web Components (LWC)
 - `testComponent.js`: Contains console.log statements and eval usage
 
+### Aura Components
+- `testAuraComponentController.js`: Contains console.log statements, eval usage, and alert usage
+
 ### Salesforce Metadata
 - `TestField__c.field-meta.xml`: Missing field description
 
@@ -56,6 +62,7 @@ The test files contain intentional code quality issues that should be detected b
 
 ### ESLint Rulesets
 - `lwc/standard-ruleset.js`: Standard rules for Lightning Web Components
+- `aura/standard-ruleset.js`: Standard rules for Aura Components
 
 ## Running Tests
 
