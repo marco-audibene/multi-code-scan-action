@@ -67,6 +67,22 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     logInfo(`Using standard configuration: ${configPath}`)
   }
 
+  // DEBUG: Check if config file exists and log its contents
+  try {
+    const configExists = await fs
+      .access(configPath)
+      .then(() => true)
+      .catch(() => false)
+    if (configExists) {
+      const configContent = await fs.readFile(configPath, "utf8")
+      logInfo(`Config file ${configPath} exists. Content preview: ${configContent.substring(0, 200)}...`)
+    } else {
+      logWarning(`Config file ${configPath} does not exist!`)
+    }
+  } catch (error) {
+    logWarning(`Error checking config file: ${error.message}`)
+  }
+
   const violations = []
 
   // Create a temporary file list for ESLint
@@ -104,19 +120,24 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Log analysis in progress
   logInfo(`Analysis in progress...`)
 
+  // DEBUG: Log the exact command being run
+  logInfo(
+    `Running command: npx ${eslintArgs.join(" ")} ${filesToScan.slice(0, 3).join(" ")}${filesToScan.length > 3 ? "..." : ""}`,
+  )
+
   // Add files to scan
   eslintArgs.push(...filesToScan)
 
-  // let stdout = ""
+  let stdout = ""
   let stderr = ""
 
   // Run ESLint
   const options = {
     ignoreReturnCode: true,
-    silent: true, // Hide command output
+    silent: false, // CHANGED: Show command output for debugging
     listeners: {
-      stdout: () => {
-        // We're not using stdout data
+      stdout: (data) => {
+        stdout += data.toString()
       },
       stderr: (data) => {
         stderr += data.toString()
@@ -125,13 +146,21 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   }
 
   try {
-    await exec.exec("npx", eslintArgs, options)
+    const exitCode = await exec.exec("npx", eslintArgs, options)
+    logInfo(`ESLint exit code: ${exitCode}`)
 
-    // Only log stderr if there's an error
+    // Log stdout and stderr for debugging
+    if (stdout) {
+      logInfo(`ESLint stdout: ${stdout}`)
+    }
     if (stderr) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
   } catch (error) {
+    logWarning(`ESLint execution error: ${error.message}`)
+    if (stdout) {
+      logInfo(`ESLint stdout: ${stdout}`)
+    }
     if (stderr) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
@@ -157,6 +186,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     eslintResult = JSON.parse(resultContent)
   } catch (error) {
     logWarning(`Failed to parse ESLint results: ${error.message}`)
+    logInfo(`Result content: ${resultContent}`)
     eslintResult = []
   }
 
