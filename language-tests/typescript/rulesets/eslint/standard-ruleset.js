@@ -3,9 +3,7 @@
  * Based on official typescript-eslint documentation
  */
 module.exports = {
-  parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint"],
-  extends: ["eslint:recommended", "@typescript-eslint/recommended"],
+  extends: ["eslint:recommended"],
   rules: {
     // Basic ESLint rules
     "no-console": "warn",
