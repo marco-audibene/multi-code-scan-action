@@ -1,0 +1,68 @@
+# TypeScript Code Quality Test Workflow
+#
+# Purpose:
+# This workflow tests the action against sample TypeScript code files using custom rulesets.
+# It uses test files from the language-tests/typescript/files directory and 
+# rulesets from the language-tests/typescript/rulesets directory.
+#
+# The test files contain intentional code quality issues that should be detected by the action.
+
+name: TypeScript Code Quality Test
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  pull_request:
+    branches: [ main ]
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  code-quality-test:
+    name: Run Action on TypeScript Test Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # Run the action against the test TypeScript files
+      - name: Run action on TypeScript test files
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "language-tests/typescript/files/"
+          installTypeScriptPlugins: true
+          
+          # Differential Enforcement Settings (our current defaults - explicitly set for clarity)
+          strictNewFiles: true                         # Any violation in new files fails the check
+          maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
+          maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
+          failOnQualityIssues: true                    # Fail the workflow if quality thresholds are exceeded
+          
+          # File scanning strategy
+          scanChangedFilesOnly: true                   # Only scan changed files (enables differential enforcement)
+          
+          file-types-config: |
+            [
+              {
+                "name": "TypeScript",
+                "sourcePath": "language-tests/typescript/files/src/",
+                "fileExtensions": [".ts"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./language-tests/typescript/rulesets/eslint/standard-ruleset.js"
+                ]
+              },
+              {
+                "name": "TypeScript React",
+                "sourcePath": "language-tests/typescript/files/components/",
+                "fileExtensions": [".tsx"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./language-tests/typescript/rulesets/eslint/standard-ruleset.js"
+                ]
+              }
+            ]

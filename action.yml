@@ -60,6 +60,10 @@ inputs:
     description: 'Whether to install Salesforce-specific ESLint plugins'
     required: false
     default: 'false'
+  installTypeScriptPlugins:
+    description: 'Whether to install TypeScript-specific ESLint plugins'
+    required: false
+    default: 'false'
 
 outputs:
   total-violations:
