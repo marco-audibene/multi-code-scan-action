@@ -35242,13 +35242,13 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
 
     if (installTypeScriptPlugins) {
-      // Check for TypeScript files first - USE .js EXTENSION FOR FLAT CONFIG
+      // Check for TypeScript files first
       if (name.toLowerCase().includes("typescript") || name.toLowerCase().includes("tsx")) {
-        configPath = "standard-tsx-config.js"
+        configPath = "standard-tsx-config.json"
       } else if (name.toLowerCase().includes("ts") || fileType.fileExtensions.some((ext) => ext === ".ts")) {
-        configPath = "standard-ts-config.js"
+        configPath = "standard-ts-config.json"
       } else if (fileType.fileExtensions.some((ext) => ext === ".tsx")) {
-        configPath = "standard-tsx-config.js"
+        configPath = "standard-tsx-config.json"
       }
     }
 
@@ -35293,17 +35293,9 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Add config if specified
   if (configPath) {
     eslintArgs.push("--config", configPath)
-
-    // ENHANCED: Check if TypeScript plugins are installed (they trigger flat config mode)
-    const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
-
-    if (installTypeScriptPlugins) {
-      logInfo("TypeScript plugins detected - using flat config mode (no --no-eslintrc flag)")
-    } else {
-      // Only add --no-eslintrc for non-TypeScript runs
-      eslintArgs.push("--no-eslintrc")
-      logInfo("Added --no-eslintrc flag")
-    }
+    // ALWAYS use legacy format - add --no-eslintrc for all runs
+    eslintArgs.push("--no-eslintrc")
+    logInfo("Using legacy config format")
   }
 
   // Enable caching if requested
