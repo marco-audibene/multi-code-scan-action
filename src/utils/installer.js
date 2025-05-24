@@ -189,19 +189,6 @@ async function createTypeScriptConfigs() {
     parserOptions: {
       ecmaVersion: 2021,
       sourceType: "module",
-      project: "./tsconfig.json",
-    },
-    rules: {
-      // TypeScript-specific rules
-      "@typescript-eslint/no-unused-vars": "error",
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/explicit-function-return-type": "warn",
-      "@typescript-eslint/no-inferrable-types": "error",
-      "@typescript-eslint/prefer-const": "error",
-
-      // Disable base ESLint rules that are covered by TypeScript
-      "no-unused-vars": "off",
-      "no-undef": "off",
     },
     env: {
       browser: true,
@@ -212,19 +199,20 @@ async function createTypeScriptConfigs() {
 
   // Create configuration for TypeScript React (TSX)
   const tsxStandardConfig = {
-    ...tsStandardConfig,
-    extends: [...tsStandardConfig.extends, "@typescript-eslint/recommended-requiring-type-checking"],
+    parser: "@typescript-eslint/parser",
+    plugins: ["@typescript-eslint"],
+    extends: ["eslint:recommended", "@typescript-eslint/recommended"],
     parserOptions: {
-      ...tsStandardConfig.parserOptions,
+      ecmaVersion: 2021,
+      sourceType: "module",
       ecmaFeatures: {
         jsx: true,
       },
     },
-    rules: {
-      ...tsStandardConfig.rules,
-      // Additional React-specific TypeScript rules
-      "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/no-floating-promises": "error",
+    env: {
+      browser: true,
+      es2021: true,
+      node: true,
     },
   }
 
