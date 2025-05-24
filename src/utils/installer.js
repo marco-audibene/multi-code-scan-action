@@ -59,6 +59,9 @@ async function installESLint() {
   // Check if Salesforce plugins should be installed
   const installSalesforcePlugins = core.getInput("installSalesforcePlugins") === "true"
 
+  // Check if TypeScript plugins should be installed
+  const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
+
   // Define Salesforce-specific dependencies
   const salesforceDeps = [
     "@salesforce/eslint-config-lwc@3.5.2",
@@ -68,8 +71,23 @@ async function installESLint() {
     "@babel/plugin-proposal-decorators@7.22.7",
   ]
 
+  // Define TypeScript-specific dependencies
+  const typeScriptDeps = [
+    "@typescript-eslint/parser@6.0.0",
+    "@typescript-eslint/eslint-plugin@6.0.0",
+    "typescript@5.0.0",
+  ]
+
   // Combine dependencies based on configuration
-  const eslintDeps = installSalesforcePlugins ? [...eslintCoreDeps, ...salesforceDeps] : eslintCoreDeps
+  let eslintDeps = [...eslintCoreDeps]
+
+  if (installSalesforcePlugins) {
+    eslintDeps = [...eslintDeps, ...salesforceDeps]
+  }
+
+  if (installTypeScriptPlugins) {
+    eslintDeps = [...eslintDeps, ...typeScriptDeps]
+  }
 
   // Install ESLint and plugins (suppress detailed output)
   const options = {
@@ -86,7 +104,13 @@ async function installESLint() {
   // Create configuration files based on project type
   if (installSalesforcePlugins) {
     await createSalesforceConfigs()
-  } else {
+  }
+
+  if (installTypeScriptPlugins) {
+    await createTypeScriptConfigs()
+  }
+
+  if (!installSalesforcePlugins && !installTypeScriptPlugins) {
     await createGenericConfigs()
   }
 
@@ -151,6 +175,62 @@ async function createSalesforceConfigs() {
   // Write these to standard locations
   await fs.writeFile("standard-lwc-config.json", JSON.stringify(lwcStandardConfig, null, 2))
   await fs.writeFile("standard-aura-config.json", JSON.stringify(auraStandardConfig, null, 2))
+}
+
+/**
+ * Creates TypeScript-specific ESLint configurations
+ */
+async function createTypeScriptConfigs() {
+  // Create standard configuration for TypeScript
+  const tsStandardConfig = {
+    parser: "@typescript-eslint/parser",
+    plugins: ["@typescript-eslint"],
+    extends: ["eslint:recommended", "@typescript-eslint/recommended"],
+    parserOptions: {
+      ecmaVersion: 2021,
+      sourceType: "module",
+      project: "./tsconfig.json",
+    },
+    rules: {
+      // TypeScript-specific rules
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/no-inferrable-types": "error",
+      "@typescript-eslint/prefer-const": "error",
+
+      // Disable base ESLint rules that are covered by TypeScript
+      "no-unused-vars": "off",
+      "no-undef": "off",
+    },
+    env: {
+      browser: true,
+      es2021: true,
+      node: true,
+    },
+  }
+
+  // Create configuration for TypeScript React (TSX)
+  const tsxStandardConfig = {
+    ...tsStandardConfig,
+    extends: [...tsStandardConfig.extends, "@typescript-eslint/recommended-requiring-type-checking"],
+    parserOptions: {
+      ...tsStandardConfig.parserOptions,
+      ecmaFeatures: {
+        jsx: true,
+      },
+    },
+    rules: {
+      ...tsStandardConfig.rules,
+      // Additional React-specific TypeScript rules
+      "@typescript-eslint/no-misused-promises": "error",
+      "@typescript-eslint/no-floating-promises": "error",
+    },
+  }
+
+  // Write these to standard locations
+  await fs.writeFile("standard-ts-config.json", JSON.stringify(tsStandardConfig, null, 2))
+  await fs.writeFile("standard-tsx-config.json", JSON.stringify(tsxStandardConfig, null, 2))
 }
 
 /**

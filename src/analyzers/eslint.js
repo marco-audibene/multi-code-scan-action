@@ -37,22 +37,34 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   } else {
     // Use standard config based on file type
     const installSalesforcePlugins = core.getInput("installSalesforcePlugins") === "true"
+    const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
 
-    if (installSalesforcePlugins) {
+    if (installTypeScriptPlugins) {
+      // Check for TypeScript files first
+      if (name.toLowerCase().includes("typescript") || name.toLowerCase().includes("tsx")) {
+        configPath = "standard-tsx-config.json"
+      } else if (name.toLowerCase().includes("ts") || fileType.fileExtensions.some((ext) => ext === ".ts")) {
+        configPath = "standard-ts-config.json"
+      } else if (fileType.fileExtensions.some((ext) => ext === ".tsx")) {
+        configPath = "standard-tsx-config.json"
+      }
+    }
+
+    // If no TypeScript config was selected, check for Salesforce
+    if (!configPath && installSalesforcePlugins) {
       if (name.toLowerCase().includes("lwc")) {
         configPath = "standard-lwc-config.json"
       } else if (name.toLowerCase().includes("aura")) {
         configPath = "standard-aura-config.json"
-      } else {
-        // For other JavaScript, use the generic config
-        configPath = "standard-js-config.json"
       }
-    } else {
-      // For generic projects, use the standard JS config
+    }
+
+    // Fall back to generic JavaScript config
+    if (!configPath) {
       configPath = "standard-js-config.json"
     }
 
-    logInfo(`Using standard configuration: ${configPath || "ESLint defaults"}`)
+    logInfo(`Using standard configuration: ${configPath}`)
   }
 
   const violations = []
@@ -172,6 +184,9 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
         } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
           const ruleName = message.ruleId.replace("@salesforce/aura/", "")
           docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
+        } else if (message.ruleId && message.ruleId.startsWith("@typescript-eslint/")) {
+          const ruleName = message.ruleId.replace("@typescript-eslint/", "")
+          docUrl = `https://typescript-eslint.io/rules/${ruleName}`
         }
         return docUrl
       },
@@ -203,6 +218,9 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
           } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
             const ruleName = message.ruleId.replace("@salesforce/aura/", "")
             docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
+          } else if (message.ruleId && message.ruleId.startsWith("@typescript-eslint/")) {
+            const ruleName = message.ruleId.replace("@typescript-eslint/", "")
+            docUrl = `https://typescript-eslint.io/rules/${ruleName}`
           }
 
           violations.push({
