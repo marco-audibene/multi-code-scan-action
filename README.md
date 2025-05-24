@@ -1,16 +1,17 @@
 # Code Quality Action
 
-A GitHub Action for running code quality checks using PMD and ESLint. This action works with any codebase and has special support for Salesforce projects.
+A comprehensive GitHub Action for running code quality checks using PMD and ESLint. **This action supports all languages compatible with PMD and ESLint**, making it suitable for diverse codebases. It includes **specialized support for Salesforce development** with built-in configurations for Apex, Lightning Web Components (LWC), and Aura components.
 
 ## Features
 
-- Analyzes code with PMD and ESLint
-- Creates GitHub annotations for violations
-- Posts a summary comment on PRs with all violations
+- **Multi-language support**: Analyzes any language supported by PMD (Java, Apex, JavaScript, XML, etc.) and ESLint (JavaScript, TypeScript, JSX, etc.)
+- **Salesforce-optimized**: Built-in support for Apex, LWC, and Aura components with Salesforce-specific rules and plugins
+- Creates GitHub annotations for violations with precise file and line information
+- Posts comprehensive summary comments on PRs with detailed violation breakdowns
 - Supports scanning only changed files or the entire codebase
 - Enables caching for faster subsequent runs
 - Generates reports in multiple formats (GitHub annotations, JSON, HTML, text)
-- Configurable violation thresholds
+- Configurable violation thresholds with flexible enforcement strategies
 - Supports baseline comparison to focus on new issues
 - **Three quality enforcement modes**: Absolutist (default), Differential, and Legacy
 
@@ -64,7 +65,7 @@ jobs:
 
 ### Salesforce Usage
 
-For Salesforce projects, enable the Salesforce-specific plugins:
+For Salesforce projects, enable the Salesforce-specific plugins and configurations:
 
 <pre><code class="language-yaml">- name: Run Code Quality Scan
   uses: your-org/multi-code-scan-action@v1
@@ -139,7 +140,7 @@ Applies strict rules to new files while being more lenient with modified files. 
 
 ### 3. Legacy Mode
 
-Uses overall violation thresholds without distinguishing between new and modified files. This reverts to the original behavior.
+Uses overall violation thresholds without distinguishing between new and modified files. This is a lighter approach that focuses on overall code quality metrics.
 
 <pre><code class="language-yaml">- name: Run Code Quality Scan (Legacy)
   uses: your-org/multi-code-scan-action@v1
@@ -258,48 +259,6 @@ If `rulesPaths` is not specified, the action will use default rulesets:
           "analyzer": "eslint",
           "rulesPaths": [
             "./.eslintrc.js"
-          ]
-        }
-      ]
-</code></pre>
-
-### TypeScript Project
-
-<pre><code class="language-yaml">- name: Run Code Quality Scan
-  uses: your-org/multi-code-scan-action@v1
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    sourcePath: "src/"
-    file-types-config: |
-      [
-        {
-          "name": "TypeScript",
-          "sourcePath": "src/",
-          "fileExtensions": [".ts", ".tsx"],
-          "analyzer": "eslint",
-          "rulesPaths": [
-            "./.eslintrc.js"
-          ]
-        }
-      ]
-</code></pre>
-
-### PHP Project
-
-<pre><code class="language-yaml">- name: Run Code Quality Scan
-  uses: your-org/multi-code-scan-action@v1
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    sourcePath: "src/"
-    file-types-config: |
-      [
-        {
-          "name": "PHP",
-          "sourcePath": "src/",
-          "fileExtensions": [".php"],
-          "analyzer": "pmd",
-          "rulesPaths": [
-            "./pmd-rules/php-ruleset.xml"
           ]
         }
       ]
