@@ -317,9 +317,9 @@ If `rulesPaths` is not specified, the action will use default rulesets:
       ]
 </code></pre>
 
-## Using the Violations Output
+## Using the Action Required Output
 
-You can use the violations output in subsequent steps of your workflow:
+You can use the `action-required` output to conditionally run steps when violations exceed thresholds:
 
 <pre><code class="language-yaml">- name: Run Code Quality Scan
   id: code-scan
@@ -327,21 +327,9 @@ You can use the violations output in subsequent steps of your workflow:
   with:
     # ... inputs as above ...
 
-- name: Process Violations
-  if: always()
-  run: |
-    echo "Total violations: ${{ steps.code-scan.outputs.total-violations }}"
-    echo "New file violations: ${{ steps.code-scan.outputs.new-file-violations }}"
-    echo "Modified file violations: ${{ steps.code-scan.outputs.modified-file-violations }}"
-    
-    # Parse the violations JSON
-    VIOLATIONS='${{ steps.code-scan.outputs.violations }}'
-    
-    # Example: Count violations by file
-    echo "$VIOLATIONS" | jq 'group_by(.file) | map({file: .[0].file, count: length}) | sort_by(.count) | reverse'
-    
-    # Example: Get all critical violations
-    echo "$VIOLATIONS" | jq '[.[] | select(.severity == "critical")]'
+- name: Check if action required
+  if: steps.code-scan.outputs.action-required == 'true'
+  run: echo "Violations require developer action!"
 </code></pre>
 
 ## License
