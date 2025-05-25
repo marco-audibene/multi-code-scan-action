@@ -76,6 +76,7 @@ async function installESLint() {
     "@typescript-eslint/parser@6.0.0",
     "@typescript-eslint/eslint-plugin@6.0.0",
     "typescript@5.0.0",
+    "@eslint/js@8.42.0", // Add this for flat config
   ]
 
   // Combine dependencies based on configuration
@@ -99,6 +100,39 @@ async function installESLint() {
     await exec.exec("npm", ["install", "--save-dev", ...eslintDeps, "--legacy-peer-deps"], options)
   } catch (error) {
     logWarning("ESLint dependencies installation had warnings (this is usually fine)")
+  }
+
+  // For TypeScript flat configs, install packages globally so they're available everywhere
+  if (installTypeScriptPlugins) {
+    logInfo("Installing TypeScript ESLint packages globally for flat config compatibility...")
+    try {
+      await exec.exec(
+        "npm",
+        [
+          "install",
+          "-g",
+          "@typescript-eslint/parser@6.0.0",
+          "@typescript-eslint/eslint-plugin@6.0.0",
+          "@eslint/js@8.42.0",
+        ],
+        { silent: true, ignoreReturnCode: true },
+      )
+      logSuccess("TypeScript packages installed globally")
+    } catch (error) {
+      logWarning("Global TypeScript package installation failed, trying alternative approach...")
+
+      // Alternative: Create symlinks in the current directory
+      try {
+        await exec.exec(
+          "npm",
+          ["link", "@typescript-eslint/parser", "@typescript-eslint/eslint-plugin", "@eslint/js"],
+          { silent: true, ignoreReturnCode: true },
+        )
+        logSuccess("Created symlinks for TypeScript packages")
+      } catch (linkError) {
+        logWarning("Could not create symlinks either. Client flat configs may need to use relative imports.")
+      }
+    }
   }
 
   // Create configuration files based on project type
@@ -181,7 +215,7 @@ async function createSalesforceConfigs() {
  * Creates TypeScript-specific ESLint configurations
  */
 async function createTypeScriptConfigs() {
-  // Create standard configuration for TypeScript
+  // Create standard configuration for TypeScript (legacy format for fallback)
   const tsStandardConfig = {
     parser: "@typescript-eslint/parser",
     plugins: ["@typescript-eslint"],
@@ -216,7 +250,7 @@ async function createTypeScriptConfigs() {
     },
   }
 
-  // Write these to standard locations
+  // Write these to standard locations (legacy format as fallback)
   await fs.writeFile("standard-ts-config.json", JSON.stringify(tsStandardConfig, null, 2))
   await fs.writeFile("standard-tsx-config.json", JSON.stringify(tsxStandardConfig, null, 2))
 }
