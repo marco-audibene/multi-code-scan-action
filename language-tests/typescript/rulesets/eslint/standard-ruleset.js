@@ -1,8 +1,8 @@
 /**
- * TypeScript ESLint Configuration (Flat Config Format - No imports)
+ * TypeScript ESLint Configuration (Legacy Format)
  * Using basic ESLint rules without any package imports
  */
-export default {
+module.exports = {
   languageOptions: {
     ecmaVersion: 2021,
     sourceType: "module",
