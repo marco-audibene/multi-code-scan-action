@@ -35223,6 +35223,8 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Log information about the scan - only log once
   logInfo(`Running eslint on ${filesToScan.length} ${name} files`)
 
+  // TypeScript configs are now in flat config format - no migration needed
+
   // Determine which config file to use
   let configPath
   if (fileType.rulesPaths && fileType.rulesPaths.length > 0) {
@@ -35239,22 +35241,34 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   } else {
     // Use standard config based on file type
     const installSalesforcePlugins = core.getInput("installSalesforcePlugins") === "true"
+    const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
 
-    if (installSalesforcePlugins) {
+    if (installTypeScriptPlugins) {
+      // Check for TypeScript files first - USE .json EXTENSION FOR LEGACY CONFIG
+      if (name.toLowerCase().includes("typescript") || name.toLowerCase().includes("tsx")) {
+        configPath = "standard-tsx-config.json"
+      } else if (name.toLowerCase().includes("ts") || fileType.fileExtensions.some((ext) => ext === ".ts")) {
+        configPath = "standard-ts-config.json"
+      } else if (fileType.fileExtensions.some((ext) => ext === ".tsx")) {
+        configPath = "standard-tsx-config.json"
+      }
+    }
+
+    // If no TypeScript config was selected, check for Salesforce
+    if (!configPath && installSalesforcePlugins) {
       if (name.toLowerCase().includes("lwc")) {
         configPath = "standard-lwc-config.json"
       } else if (name.toLowerCase().includes("aura")) {
         configPath = "standard-aura-config.json"
-      } else {
-        // For other JavaScript, use the generic config
-        configPath = "standard-js-config.json"
       }
-    } else {
-      // For generic projects, use the standard JS config
+    }
+
+    // Fall back to generic JavaScript config
+    if (!configPath) {
       configPath = "standard-js-config.json"
     }
 
-    logInfo(`Using standard configuration: ${configPath || "ESLint defaults"}`)
+    logInfo(`Using standard configuration: ${configPath}`)
   }
 
   const violations = []
@@ -35280,7 +35294,8 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
 
   // Add config if specified
   if (configPath) {
-    eslintArgs.push("--config", configPath, "--no-eslintrc")
+    eslintArgs.push("--config", configPath)
+    logInfo(`Using config: ${configPath}`)
   }
 
   // Enable caching if requested
@@ -35294,19 +35309,24 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Log analysis in progress
   logInfo(`Analysis in progress...`)
 
+  // DEBUG: Log the exact command being run
+  logInfo(
+    `Running command: npx ${eslintArgs.join(" ")} ${filesToScan.slice(0, 3).join(" ")}${filesToScan.length > 3 ? "..." : ""}`,
+  )
+
   // Add files to scan
   eslintArgs.push(...filesToScan)
 
-  // let stdout = ""
+  let stdout = ""
   let stderr = ""
 
   // Run ESLint
   const options = {
     ignoreReturnCode: true,
-    silent: true, // Hide command output
+    silent: true, // Back to silent for cleaner output
     listeners: {
-      stdout: () => {
-        // We're not using stdout data
+      stdout: (data) => {
+        stdout += data.toString()
       },
       stderr: (data) => {
         stderr += data.toString()
@@ -35315,13 +35335,15 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   }
 
   try {
-    await exec.exec("npx", eslintArgs, options)
+    const exitCode = await exec.exec("npx", eslintArgs, options)
+    logInfo(`ESLint exit code: ${exitCode}`)
 
     // Only log stderr if there's an error
-    if (stderr) {
+    if (stderr && exitCode !== 0) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
   } catch (error) {
+    logWarning(`ESLint execution error: ${error.message}`)
     if (stderr) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
@@ -35374,6 +35396,9 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
         } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
           const ruleName = message.ruleId.replace("@salesforce/aura/", "")
           docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
+        } else if (message.ruleId && message.ruleId.startsWith("@typescript-eslint/")) {
+          const ruleName = message.ruleId.replace("@typescript-eslint/", "")
+          docUrl = `https://typescript-eslint.io/rules/${ruleName}`
         }
         return docUrl
       },
@@ -35405,6 +35430,9 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
           } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
             const ruleName = message.ruleId.replace("@salesforce/aura/", "")
             docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
+          } else if (message.ruleId && message.ruleId.startsWith("@typescript-eslint/")) {
+            const ruleName = message.ruleId.replace("@typescript-eslint/", "")
+            docUrl = `https://typescript-eslint.io/rules/${ruleName}`
           }
 
           violations.push({
@@ -37146,6 +37174,9 @@ async function installESLint() {
   // Check if Salesforce plugins should be installed
   const installSalesforcePlugins = core.getInput("installSalesforcePlugins") === "true"
 
+  // Check if TypeScript plugins should be installed
+  const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
+
   // Define Salesforce-specific dependencies
   const salesforceDeps = [
     "@salesforce/eslint-config-lwc@3.5.2",
@@ -37155,8 +37186,25 @@ async function installESLint() {
     "@babel/plugin-proposal-decorators@7.22.7",
   ]
 
+  // Define TypeScript-specific dependencies - UPDATED VERSIONS
+  const typeScriptDeps = [
+    "@typescript-eslint/parser@8.0.0",
+    "@typescript-eslint/eslint-plugin@8.0.0",
+    "typescript@5.0.0",
+    "@eslint/js@9.27.0", // Match ESLint version
+    "eslint@9.27.0", // Ensure we have the right ESLint version
+  ]
+
   // Combine dependencies based on configuration
-  const eslintDeps = installSalesforcePlugins ? [...eslintCoreDeps, ...salesforceDeps] : eslintCoreDeps
+  let eslintDeps = [...eslintCoreDeps]
+
+  if (installSalesforcePlugins) {
+    eslintDeps = [...eslintDeps, ...salesforceDeps]
+  }
+
+  if (installTypeScriptPlugins) {
+    eslintDeps = [...eslintDeps, ...typeScriptDeps]
+  }
 
   // Install ESLint and plugins (suppress detailed output)
   const options = {
@@ -37165,15 +37213,54 @@ async function installESLint() {
   }
 
   try {
+    logInfo("Installing npm packages...")
     await exec.exec("npm", ["install", "--save-dev", ...eslintDeps, "--legacy-peer-deps"], options)
+    logSuccess("ESLint packages installed successfully")
   } catch (error) {
     logWarning("ESLint dependencies installation had warnings (this is usually fine)")
+  }
+
+  // For flat config compatibility, also install packages globally
+  if (installTypeScriptPlugins) {
+    logInfo("Installing TypeScript ESLint packages globally for flat config compatibility...")
+    try {
+      await exec.exec(
+        "npm",
+        [
+          "install",
+          "-g",
+          "@typescript-eslint/parser@8.0.0",
+          "@typescript-eslint/eslint-plugin@8.0.0",
+          "@eslint/js@9.27.0",
+          "eslint@9.27.0",
+        ],
+        { silent: true, ignoreReturnCode: true },
+      )
+      logSuccess("TypeScript packages installed globally")
+    } catch (error) {
+      logWarning("Global TypeScript package installation failed, trying local approach...")
+
+      // Alternative: Create node_modules symlinks
+      try {
+        // Ensure we have a local node_modules that ESLint can find
+        await exec.exec("npm", ["install", "--no-save", ...typeScriptDeps], { silent: true, ignoreReturnCode: true })
+        logSuccess("TypeScript packages installed locally")
+      } catch (linkError) {
+        logWarning("Local TypeScript package installation also failed")
+      }
+    }
   }
 
   // Create configuration files based on project type
   if (installSalesforcePlugins) {
     await createSalesforceConfigs()
-  } else {
+  }
+
+  if (installTypeScriptPlugins) {
+    await createTypeScriptConfigs()
+  }
+
+  if (!installSalesforcePlugins && !installTypeScriptPlugins) {
     await createGenericConfigs()
   }
 
@@ -37238,6 +37325,50 @@ async function createSalesforceConfigs() {
   // Write these to standard locations
   await fs.writeFile("standard-lwc-config.json", JSON.stringify(lwcStandardConfig, null, 2))
   await fs.writeFile("standard-aura-config.json", JSON.stringify(auraStandardConfig, null, 2))
+}
+
+/**
+ * Creates TypeScript-specific ESLint configurations
+ */
+async function createTypeScriptConfigs() {
+  // Create standard configuration for TypeScript (legacy format for fallback)
+  const tsStandardConfig = {
+    parser: "@typescript-eslint/parser",
+    plugins: ["@typescript-eslint"],
+    extends: ["eslint:recommended", "@typescript-eslint/recommended"],
+    parserOptions: {
+      ecmaVersion: 2021,
+      sourceType: "module",
+    },
+    env: {
+      browser: true,
+      es2021: true,
+      node: true,
+    },
+  }
+
+  // Create configuration for TypeScript React (TSX)
+  const tsxStandardConfig = {
+    parser: "@typescript-eslint/parser",
+    plugins: ["@typescript-eslint"],
+    extends: ["eslint:recommended", "@typescript-eslint/recommended"],
+    parserOptions: {
+      ecmaVersion: 2021,
+      sourceType: "module",
+      ecmaFeatures: {
+        jsx: true,
+      },
+    },
+    env: {
+      browser: true,
+      es2021: true,
+      node: true,
+    },
+  }
+
+  // Write these to standard locations (legacy format as fallback)
+  await fs.writeFile("standard-ts-config.json", JSON.stringify(tsStandardConfig, null, 2))
+  await fs.writeFile("standard-tsx-config.json", JSON.stringify(tsxStandardConfig, null, 2))
 }
 
 /**

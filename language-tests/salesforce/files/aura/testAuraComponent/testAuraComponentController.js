@@ -11,7 +11,7 @@
   
       // Violation: alert usage
       if (!recordId) {
-        alert("No record ID provided")
+        alert("No record ID provided.")
       }
     },
   

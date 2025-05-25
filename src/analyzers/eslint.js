@@ -21,6 +21,8 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Log information about the scan - only log once
   logInfo(`Running eslint on ${filesToScan.length} ${name} files`)
 
+  // TypeScript configs are now in flat config format - no migration needed
+
   // Determine which config file to use
   let configPath
   if (fileType.rulesPaths && fileType.rulesPaths.length > 0) {
@@ -37,22 +39,34 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   } else {
     // Use standard config based on file type
     const installSalesforcePlugins = core.getInput("installSalesforcePlugins") === "true"
+    const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
 
-    if (installSalesforcePlugins) {
+    if (installTypeScriptPlugins) {
+      // Check for TypeScript files first - USE .json EXTENSION FOR LEGACY CONFIG
+      if (name.toLowerCase().includes("typescript") || name.toLowerCase().includes("tsx")) {
+        configPath = "standard-tsx-config.json"
+      } else if (name.toLowerCase().includes("ts") || fileType.fileExtensions.some((ext) => ext === ".ts")) {
+        configPath = "standard-ts-config.json"
+      } else if (fileType.fileExtensions.some((ext) => ext === ".tsx")) {
+        configPath = "standard-tsx-config.json"
+      }
+    }
+
+    // If no TypeScript config was selected, check for Salesforce
+    if (!configPath && installSalesforcePlugins) {
       if (name.toLowerCase().includes("lwc")) {
         configPath = "standard-lwc-config.json"
       } else if (name.toLowerCase().includes("aura")) {
         configPath = "standard-aura-config.json"
-      } else {
-        // For other JavaScript, use the generic config
-        configPath = "standard-js-config.json"
       }
-    } else {
-      // For generic projects, use the standard JS config
+    }
+
+    // Fall back to generic JavaScript config
+    if (!configPath) {
       configPath = "standard-js-config.json"
     }
 
-    logInfo(`Using standard configuration: ${configPath || "ESLint defaults"}`)
+    logInfo(`Using standard configuration: ${configPath}`)
   }
 
   const violations = []
@@ -74,11 +88,13 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     "--output-file",
     resultPath,
     "--no-error-on-unmatched-pattern",
+    "--no-eslintrc", // Add this flag back
   ]
 
   // Add config if specified
   if (configPath) {
-    eslintArgs.push("--config", configPath, "--no-eslintrc")
+    eslintArgs.push("--config", configPath)
+    logInfo(`Using config: ${configPath}`)
   }
 
   // Enable caching if requested
@@ -92,19 +108,24 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Log analysis in progress
   logInfo(`Analysis in progress...`)
 
+  // DEBUG: Log the exact command being run
+  logInfo(
+    `Running command: npx ${eslintArgs.join(" ")} ${filesToScan.slice(0, 3).join(" ")}${filesToScan.length > 3 ? "..." : ""}`,
+  )
+
   // Add files to scan
   eslintArgs.push(...filesToScan)
 
-  // let stdout = ""
+  let stdout = ""
   let stderr = ""
 
   // Run ESLint
   const options = {
     ignoreReturnCode: true,
-    silent: true, // Hide command output
+    silent: true, // Back to silent for cleaner output
     listeners: {
-      stdout: () => {
-        // We're not using stdout data
+      stdout: (data) => {
+        stdout += data.toString()
       },
       stderr: (data) => {
         stderr += data.toString()
@@ -113,13 +134,15 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   }
 
   try {
-    await exec.exec("npx", eslintArgs, options)
+    const exitCode = await exec.exec("npx", eslintArgs, options)
+    logInfo(`ESLint exit code: ${exitCode}`)
 
     // Only log stderr if there's an error
-    if (stderr) {
+    if (stderr && exitCode !== 0) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
   } catch (error) {
+    logWarning(`ESLint execution error: ${error.message}`)
     if (stderr) {
       logInfo(`ESLint stderr: ${stderr}`)
     }
@@ -172,6 +195,9 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
         } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
           const ruleName = message.ruleId.replace("@salesforce/aura/", "")
           docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
+        } else if (message.ruleId && message.ruleId.startsWith("@typescript-eslint/")) {
+          const ruleName = message.ruleId.replace("@typescript-eslint/", "")
+          docUrl = `https://typescript-eslint.io/rules/${ruleName}`
         }
         return docUrl
       },
@@ -203,6 +229,9 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
           } else if (message.ruleId && message.ruleId.startsWith("@salesforce/aura/")) {
             const ruleName = message.ruleId.replace("@salesforce/aura/", "")
             docUrl = `https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules/${ruleName}.md`
+          } else if (message.ruleId && message.ruleId.startsWith("@typescript-eslint/")) {
+            const ruleName = message.ruleId.replace("@typescript-eslint/", "")
+            docUrl = `https://typescript-eslint.io/rules/${ruleName}`
           }
 
           violations.push({
