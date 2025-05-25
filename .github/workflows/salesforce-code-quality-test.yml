@@ -30,6 +30,7 @@ jobs:
       
       # Run the action against the test Salesforce files
       - name: Run action on Salesforce test files
+        id: code-scan
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -84,3 +85,8 @@ jobs:
                 ]
               }
             ]
+
+      # Check if action is required based on violations
+      - name: Check if action required
+        if: steps.code-scan.outputs.action-required == 'true'
+        run: echo "Violations require developer action!"

@@ -156,16 +156,6 @@ function evaluateResults(violationsObj, config) {
   setOutput("new-file-violations", newFileViolations.length)
   setOutput("modified-file-violations", modifiedFileViolations.length)
 
-  // Set violations as JSON output
-  try {
-    // Convert violations to JSON string
-    const violationsJson = JSON.stringify(allViolations)
-    setOutput("violations", violationsJson)
-    logInfo("Violations data set as output")
-  } catch (error) {
-    logWarning(`Failed to set violations as output: ${error.message}`)
-  }
-
   // Determine if action should fail based on thresholds
   let shouldFail = false
   const failureReasons = []
@@ -208,6 +198,19 @@ function evaluateResults(violationsObj, config) {
         `Overall medium violations: ${mediumViolations} ` + `(threshold: ${config.maxMediumViolations})`,
       )
     }
+  }
+
+  // Set the action required flag
+  setOutput("action-required", shouldFail)
+
+  // Set violations as JSON output
+  try {
+    // Convert violations to JSON string
+    const violationsJson = JSON.stringify(allViolations)
+    setOutput("violations", violationsJson)
+    logInfo("Violations data set as output")
+  } catch (error) {
+    logWarning(`Failed to set violations as output: ${error.message}`)
   }
 
   if (shouldFail && config.failOnQualityIssues) {
