@@ -1,9 +1,7 @@
 /**
- * TypeScript ESLint Configuration (Flat Config Format - No TypeScript packages)
- * Using basic ESLint rules without TypeScript-specific parser or plugin
+ * TypeScript ESLint Configuration (Flat Config Format - No imports)
+ * Using basic ESLint rules without any package imports
  */
-import js from "@eslint/js"
-
 export default {
   languageOptions: {
     ecmaVersion: 2021,
@@ -15,10 +13,7 @@ export default {
     },
   },
   rules: {
-    // Include base ESLint recommended rules
-    ...js.configs.recommended.rules,
-
-    // Basic ESLint rules
+    // Basic ESLint rules (manually specified)
     "no-console": "warn",
     "no-eval": "error",
     "no-alert": "error",
@@ -26,9 +21,7 @@ export default {
     "prefer-const": "error",
     "no-var": "error",
     eqeqeq: "error",
-
-    // Disable rules that might not work well with TypeScript syntax
-    "no-unused-vars": "off",
-    "no-undef": "off",
+    "no-unused-vars": "off", // Disabled for TypeScript
+    "no-undef": "off", // Disabled for TypeScript
   },
 }
