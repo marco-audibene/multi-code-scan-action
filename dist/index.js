@@ -35293,10 +35293,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Add config if specified
   if (configPath) {
     eslintArgs.push("--config", configPath)
-
-    // Always force legacy mode to avoid flat config issues
-    eslintArgs.push("--no-eslintrc")
-    logInfo("Forced legacy config mode with --no-eslintrc flag")
+    logInfo(`Using config: ${configPath}`)
   }
 
   // Enable caching if requested
