@@ -1,21 +1,33 @@
 /**
- * TypeScript ESLint Configuration (Legacy Format)
+ * TypeScript ESLint Configuration (Flat Config Format)
  * https://typescript-eslint.io/getting-started
+ * https://eslint.org/docs/latest/use/configure/migration-guide#custom-parsers
  */
-module.exports = {
-  parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint"],
-  extends: ["eslint:recommended", "@typescript-eslint/recommended"],
-  parserOptions: {
+import typescriptEslint from "@typescript-eslint/eslint-plugin"
+import typescriptParser from "@typescript-eslint/parser"
+import js from "@eslint/js"
+
+export default {
+  languageOptions: {
+    parser: typescriptParser,
     ecmaVersion: 2021,
     sourceType: "module",
+    globals: {
+      browser: true,
+      es2021: true,
+      node: true,
+    },
   },
-  env: {
-    browser: true,
-    es2021: true,
-    node: true,
+  plugins: {
+    "@typescript-eslint": typescriptEslint,
   },
   rules: {
+    // Include base ESLint recommended rules
+    ...js.configs.recommended.rules,
+
+    // Include TypeScript ESLint recommended rules
+    ...typescriptEslint.configs.recommended.rules,
+
     // Basic ESLint rules
     "no-console": "warn",
     "no-eval": "error",
