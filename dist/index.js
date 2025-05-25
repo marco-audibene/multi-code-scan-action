@@ -35318,7 +35318,6 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Add files to scan
   eslintArgs.push(...filesToScan)
 
-  let stdout = ""
   let stderr = ""
 
   // Run ESLint
@@ -35326,9 +35325,6 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     ignoreReturnCode: true,
     silent: true, // Back to silent for cleaner output
     listeners: {
-      stdout: (data) => {
-        stdout += data.toString()
-      },
       stderr: (data) => {
         stderr += data.toString()
       },
