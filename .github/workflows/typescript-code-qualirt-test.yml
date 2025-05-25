@@ -36,6 +36,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sourcePath: "language-tests/typescript/files/"
           installTypeScriptPlugins: true
+          check-name: "TypeScript Quality Check"
           
           # Differential Enforcement Settings (our current defaults - explicitly set for clarity)
           strictNewFiles: true                         # Any violation in new files fails the check

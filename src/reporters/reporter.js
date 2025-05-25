@@ -100,8 +100,9 @@ async function createAnnotations(token, violations, checkName) {
  * Creates a PR comment with violations summary
  * @param {string} token - GitHub token
  * @param {Array} violations - Violations to report
+ * @param {string} checkName - Name of the check (for comment title)
  */
-async function createPRComment(token, violations) {
+async function createPRComment(token, violations, checkName = "Code Quality") {
   logInfo(`Creating PR comment for ${violations.length} violations`)
 
   const octokit = github.getOctokit(token)
@@ -117,8 +118,8 @@ async function createPRComment(token, violations) {
     violationsByFile[v.file].push(v)
   })
 
-  // Create markdown table
-  let commentBody = "## Code Quality Violations\n\n"
+  // Create markdown table with custom check name
+  let commentBody = `## ${checkName} Results\n\n`
   commentBody += "The following code quality violations were found in this PR:\n\n"
 
   // Add summary by file

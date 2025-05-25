@@ -36134,8 +36134,15 @@ async function createCheckRun(token, violations, checkName) {
  * @param {Array} violations - All violations to report
  * @param {Array} newFileViolations - Violations in new files
  * @param {Array} modifiedFileViolations - Violations in modified files
+ * @param {string} checkName - Name of the check (for comment title)
  */
-async function createPRComment(token, violations, newFileViolations, modifiedFileViolations) {
+async function createPRComment(
+  token,
+  violations,
+  newFileViolations,
+  modifiedFileViolations,
+  checkName = "Code Quality Scan", // Fixed to match action.yml default
+) {
   logInfo(`Creating PR comment for ${violations.length} violations`)
 
   const octokit = github.getOctokit(token)
@@ -36151,8 +36158,8 @@ async function createPRComment(token, violations, newFileViolations, modifiedFil
     violationsByFile[v.file].push(v)
   })
 
-  // Create markdown table
-  let commentBody = "## Code Quality Violations\n\n"
+  // Create markdown table with custom check name
+  let commentBody = `## ${checkName} Results\n\n`
 
   // Add key metrics summary
   const totalViolations = violations.length
@@ -36354,8 +36361,9 @@ async function createAnnotations(token, violations, checkName) {
  * Creates a PR comment with violations summary
  * @param {string} token - GitHub token
  * @param {Array} violations - Violations to report
+ * @param {string} checkName - Name of the check (for comment title)
  */
-async function createPRComment(token, violations) {
+async function createPRComment(token, violations, checkName = "Code Quality") {
   logInfo(`Creating PR comment for ${violations.length} violations`)
 
   const octokit = github.getOctokit(token)
@@ -36371,8 +36379,8 @@ async function createPRComment(token, violations) {
     violationsByFile[v.file].push(v)
   })
 
-  // Create markdown table
-  let commentBody = "## Code Quality Violations\n\n"
+  // Create markdown table with custom check name
+  let commentBody = `## ${checkName} Results\n\n`
   commentBody += "The following code quality violations were found in this PR:\n\n"
 
   // Add summary by file
@@ -39602,6 +39610,7 @@ async function run() {
             violationsObj.allViolations,
             violationsObj.newFileViolations,
             violationsObj.modifiedFileViolations,
+            config.checkName, // Pass the check name to the PR comment
           )
         }
       }

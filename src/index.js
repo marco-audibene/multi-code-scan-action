@@ -64,6 +64,7 @@ async function run() {
             violationsObj.allViolations,
             violationsObj.newFileViolations,
             violationsObj.modifiedFileViolations,
+            config.checkName, // Pass the check name to the PR comment
           )
         }
       }
