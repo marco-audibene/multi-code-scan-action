@@ -37186,12 +37186,13 @@ async function installESLint() {
     "@babel/plugin-proposal-decorators@7.22.7",
   ]
 
-  // Define TypeScript-specific dependencies
+  // Define TypeScript-specific dependencies - UPDATED VERSIONS
   const typeScriptDeps = [
-    "@typescript-eslint/parser@6.0.0",
-    "@typescript-eslint/eslint-plugin@6.0.0",
+    "@typescript-eslint/parser@8.0.0",
+    "@typescript-eslint/eslint-plugin@8.0.0",
     "typescript@5.0.0",
-    "@eslint/js@8.42.0", // Add this for flat config
+    "@eslint/js@9.27.0", // Match ESLint version
+    "eslint@9.27.0", // Ensure we have the right ESLint version
   ]
 
   // Combine dependencies based on configuration
@@ -37212,12 +37213,14 @@ async function installESLint() {
   }
 
   try {
+    logInfo("Installing npm packages...")
     await exec.exec("npm", ["install", "--save-dev", ...eslintDeps, "--legacy-peer-deps"], options)
+    logSuccess("ESLint packages installed successfully")
   } catch (error) {
     logWarning("ESLint dependencies installation had warnings (this is usually fine)")
   }
 
-  // For TypeScript flat configs, install packages globally so they're available everywhere
+  // For flat config compatibility, also install packages globally
   if (installTypeScriptPlugins) {
     logInfo("Installing TypeScript ESLint packages globally for flat config compatibility...")
     try {
@@ -37226,26 +37229,24 @@ async function installESLint() {
         [
           "install",
           "-g",
-          "@typescript-eslint/parser@6.0.0",
-          "@typescript-eslint/eslint-plugin@6.0.0",
-          "@eslint/js@8.42.0",
+          "@typescript-eslint/parser@8.0.0",
+          "@typescript-eslint/eslint-plugin@8.0.0",
+          "@eslint/js@9.27.0",
+          "eslint@9.27.0",
         ],
         { silent: true, ignoreReturnCode: true },
       )
       logSuccess("TypeScript packages installed globally")
     } catch (error) {
-      logWarning("Global TypeScript package installation failed, trying alternative approach...")
+      logWarning("Global TypeScript package installation failed, trying local approach...")
 
-      // Alternative: Create symlinks in the current directory
+      // Alternative: Create node_modules symlinks
       try {
-        await exec.exec(
-          "npm",
-          ["link", "@typescript-eslint/parser", "@typescript-eslint/eslint-plugin", "@eslint/js"],
-          { silent: true, ignoreReturnCode: true },
-        )
-        logSuccess("Created symlinks for TypeScript packages")
+        // Ensure we have a local node_modules that ESLint can find
+        await exec.exec("npm", ["install", "--no-save", ...typeScriptDeps], { silent: true, ignoreReturnCode: true })
+        logSuccess("TypeScript packages installed locally")
       } catch (linkError) {
-        logWarning("Could not create symlinks either. Client flat configs may need to use relative imports.")
+        logWarning("Local TypeScript package installation also failed")
       }
     }
   }
