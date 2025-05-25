@@ -9,7 +9,7 @@
       // Get the record ID
       var recordId = component.get("v.recordId")
   
-      // Violation: alert usage
+      // Violation: alert usage.
       if (!recordId) {
         alert("No record ID provided.")
       }
