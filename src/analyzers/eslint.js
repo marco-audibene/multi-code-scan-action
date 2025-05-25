@@ -88,6 +88,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     "--output-file",
     resultPath,
     "--no-error-on-unmatched-pattern",
+    "--no-eslintrc", // Add this flag back
   ]
 
   // Add config if specified
