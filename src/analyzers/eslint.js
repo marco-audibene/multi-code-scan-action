@@ -7,72 +7,6 @@ const { logWarning, logInfo } = require("../utils/logger")
 const formatter = require("../utils/formatter")
 
 /**
- * Migrates a TypeScript ESLint config to flat config format if needed
- * @param {string} configPath - Path to the config file to migrate
- * @returns {Promise<string>} - Path to the migrated config (or original if no migration needed)
- */
-async function migrateTypeScriptConfigIfNeeded(configPath) {
-  const installTypeScriptPlugins = core.getInput("installTypeScriptPlugins") === "true"
-
-  if (!installTypeScriptPlugins) {
-    return configPath // No migration needed
-  }
-
-  // Check if this looks like a TypeScript config by reading the file
-  try {
-    const configContent = await fs.readFile(configPath, "utf8")
-
-    // Check if it contains TypeScript-specific patterns that indicate legacy format
-    const hasLegacyTypeScriptConfig =
-      configContent.includes('parser: "@typescript-eslint/parser"') ||
-      configContent.includes('plugins: ["@typescript-eslint"]') ||
-      configContent.includes("@typescript-eslint/eslint-plugin")
-
-    if (!hasLegacyTypeScriptConfig) {
-      return configPath // Not a TypeScript config or already migrated
-    }
-
-    logInfo(`Migrating TypeScript config to flat format: ${configPath}`)
-
-    // Run the ESLint migration tool
-    const migrationOptions = {
-      ignoreReturnCode: true,
-      silent: true,
-    }
-
-    let migrationOutput = ""
-    await exec.exec("npx", ["@eslint/migrate-config", configPath], {
-      ...migrationOptions,
-      listeners: {
-        stdout: (data) => {
-          migrationOutput += data.toString()
-        },
-        stderr: (data) => {
-          migrationOutput += data.toString()
-        },
-      },
-    })
-
-    // The migration tool typically creates a new file with .mjs extension
-    const migratedPath = configPath.replace(/\.js$/, ".mjs")
-
-    // Check if the migrated file was created
-    try {
-      await fs.access(migratedPath)
-      logInfo(`Successfully migrated TypeScript config to: ${migratedPath}`)
-      return migratedPath
-    } catch (error) {
-      logWarning(`Migration tool did not create expected file: ${migratedPath}`)
-      logInfo(`Migration output: ${migrationOutput}`)
-      return configPath // Fall back to original
-    }
-  } catch (error) {
-    logWarning(`Failed to migrate TypeScript config ${configPath}: ${error.message}`)
-    return configPath // Fall back to original
-  }
-}
-
-/**
  * Runs ESLint on the specified files
  * @param {Object} fileType - File type configuration
  * @param {Array} filesToScan - Files to scan
@@ -87,18 +21,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Log information about the scan - only log once
   logInfo(`Running eslint on ${filesToScan.length} ${name} files`)
 
-  // Migrate TypeScript configs to flat format if needed
-  if (fileType.rulesPaths && fileType.rulesPaths.length > 0) {
-    // Migrate each ruleset path if it's a TypeScript config
-    const migratedPaths = []
-    for (const rulePath of fileType.rulesPaths) {
-      const migratedPath = await migrateTypeScriptConfigIfNeeded(rulePath)
-      migratedPaths.push(migratedPath)
-    }
-
-    // Update the fileType with migrated paths
-    fileType.rulesPaths = migratedPaths
-  }
+  // TypeScript configs are now in flat config format - no migration needed
 
   // Determine which config file to use
   let configPath
