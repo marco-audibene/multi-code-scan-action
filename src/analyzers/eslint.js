@@ -21,8 +21,6 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Log information about the scan - only log once
   logInfo(`Running eslint on ${filesToScan.length} ${name} files`)
 
-  // TypeScript configs are now in flat config format - no migration needed
-
   // Determine which config file to use
   let configPath
   if (fileType.rulesPaths && fileType.rulesPaths.length > 0) {
@@ -78,7 +76,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Create a temporary results file
   const resultPath = `${nameKey}-eslint-results.json`
 
-  // Build ESLint command
+  // Build ESLint command - FORCE LEGACY MODE
   const eslintArgs = [
     "eslint",
     "--ext",
@@ -88,6 +86,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     "--output-file",
     resultPath,
     "--no-error-on-unmatched-pattern",
+    "--no-config-lookup", // Prevent ESLint from looking for config files that might trigger flat config
   ]
 
   // Add config if specified
