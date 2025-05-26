@@ -290,6 +290,88 @@ If `rulesPaths` is not specified, the action will use default rulesets:
   - It uses "standard-js-config.json" for all JavaScript files
 - The log will show: `Using standard configuration: standard-js-config.json` or similar
 
+## Salesforce ESLint Configuration
+
+When using custom ESLint rulesets for Salesforce components, follow these configuration structures:
+
+### Lightning Web Components (LWC)
+
+\`\`\`javascript
+// eslint-rules/lwc-ruleset.js
+module.exports = {
+  parser: "@babel/eslint-parser",
+  parserOptions: {
+    requireConfigFile: false,
+    babelOptions: {
+      parserOpts: {
+        plugins: ["classProperties", ["decorators", { decoratorsBeforeExport: false }]],
+      },
+    },
+  },
+  plugins: ["@lwc/eslint-plugin-lwc"],
+  rules: {
+    "no-console": ["warn", { allow: ["error"] }],
+    "no-eval": "error",
+    "no-unused-vars": "error",
+    "@lwc/lwc/no-async-operation": "error",
+    "@lwc/lwc/no-inner-html": "error",
+    "@lwc/lwc/no-document-query": "error",
+  },
+}
+\`\`\`
+
+### Aura Components
+
+\`\`\`javascript
+// eslint-rules/aura-ruleset.js
+module.exports = {
+  parser: "@babel/eslint-parser",
+  parserOptions: {
+    requireConfigFile: false,
+    ecmaVersion: 2018,
+    sourceType: "script",
+  },
+  plugins: ["@salesforce/eslint-plugin-aura"],
+  rules: {
+    "no-console": ["warn", { allow: ["error"] }],
+    "no-eval": "error",
+    "no-alert": "error",
+    "no-unused-vars": "error",
+    "@salesforce/aura/no-deprecated-component": "error",
+    "@salesforce/aura/no-js-in-markup": "error",
+  },
+}
+\`\`\`
+
+### Key Configuration Notes:
+
+1. **Parser Configuration**: Both LWC and Aura require `@babel/eslint-parser` with specific parser options
+2. **Plugins**: 
+   - LWC uses `@lwc/eslint-plugin-lwc`
+   - Aura uses `@salesforce/eslint-plugin-aura`
+3. **Parser Options**:
+   - LWC: `sourceType: "module"` with decorators and class properties support
+   - Aura: `sourceType: "script"` with ES2018 features
+4. **Rule Prefixes**:
+   - LWC rules: `@lwc/lwc/rule-name`
+   - Aura rules: `@salesforce/aura/rule-name`
+
+### Common Salesforce ESLint Rules:
+
+| Component Type | Rule | Description |
+|----------------|------|-------------|
+| **LWC** | `@lwc/lwc/no-async-operation` | Prevents setTimeout/setInterval usage |
+| **LWC** | `@lwc/lwc/no-inner-html` | Prevents innerHTML usage for security |
+| **LWC** | `@lwc/lwc/no-document-query` | Prevents direct DOM queries |
+| **Aura** | `@salesforce/aura/no-deprecated-component` | Flags deprecated Aura components |
+| **Aura** | `@salesforce/aura/no-js-in-markup` | Prevents JavaScript in markup |
+| **Both** | `no-console` | Restricts console usage (allow error only) |
+| **Both** | `no-eval` | Prevents eval() usage for security |
+
+For complete rule documentation, see:
+- [LWC ESLint Rules](https://github.com/salesforce/eslint-plugin-lwc/tree/master/docs/rules)
+- [Aura ESLint Rules](https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules)
+
 ## Examples
 
 ### Java Project
