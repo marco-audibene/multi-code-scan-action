@@ -35822,13 +35822,11 @@ function evaluateResults(violationsObj, config) {
   const newFileCriticalViolations = newFileViolations.filter(
     (v) => v.severity === "critical" || v.severity === "high",
   ).length
-  const newFileMediumViolations = newFileViolations.filter((v) => v.severity === "medium").length
 
   // Count violations in modified files by severity
   const modifiedFileCriticalViolations = modifiedFileViolations.filter(
     (v) => v.severity === "critical" || v.severity === "high",
   ).length
-  const modifiedFileMediumViolations = modifiedFileViolations.filter((v) => v.severity === "medium").length
 
   logSectionHeader("Results Summary")
   logInfo(`Total violations: ${allViolations.length}`)
@@ -39541,7 +39539,6 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const { execSync } = __nccwpck_require__(2081)
-const path = __nccwpck_require__(1017)
 const installer = __nccwpck_require__(8530)
 const { loadConfig } = __nccwpck_require__(4570)
 const { initializeScan, runScan, createOutputDirectory, evaluateResults } = __nccwpck_require__(225)

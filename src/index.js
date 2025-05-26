@@ -1,5 +1,4 @@
 const { execSync } = require("child_process")
-const path = require("path")
 const installer = require("./utils/installer")
 const { loadConfig } = require("./config")
 const { initializeScan, runScan, createOutputDirectory, evaluateResults } = require("./builder")

@@ -131,13 +131,11 @@ function evaluateResults(violationsObj, config) {
   const newFileCriticalViolations = newFileViolations.filter(
     (v) => v.severity === "critical" || v.severity === "high",
   ).length
-  const newFileMediumViolations = newFileViolations.filter((v) => v.severity === "medium").length
 
   // Count violations in modified files by severity
   const modifiedFileCriticalViolations = modifiedFileViolations.filter(
     (v) => v.severity === "critical" || v.severity === "high",
   ).length
-  const modifiedFileMediumViolations = modifiedFileViolations.filter((v) => v.severity === "medium").length
 
   logSectionHeader("Results Summary")
   logInfo(`Total violations: ${allViolations.length}`)
