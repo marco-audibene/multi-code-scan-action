@@ -11,7 +11,7 @@ name: Salesforce Code Quality Test
 
 on:
   pull_request:
-    branches: [ main ]
+    types: [opened, reopened, synchronize]
     paths:
       - 'language-tests/salesforce/files/**'
 
