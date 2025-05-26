@@ -298,7 +298,38 @@ For complete rule documentation and configuration syntax, see:
 - [PMD Apex Rules](https://pmd.github.io/pmd/pmd_rules_apex.html) (Salesforce Apex)
 - [PMD Ruleset Configuration](https://pmd.github.io/pmd/pmd_userdocs_making_rulesets.html) (General ruleset syntax)
 
-## Salesforce ESLint Configuration
+## ESLint Configuration
+
+When using custom ESLint rulesets, you can create JavaScript configuration files to define which rules to apply.
+
+### Standard JavaScript/TypeScript
+
+<pre><code class="language-javascript">// eslint-rules/standard-ruleset.js
+module.exports = {
+  env: {
+    browser: true,
+    es2021: true,
+    node: true,
+  },
+  extends: ["eslint:recommended"],
+  parser: "@babel/eslint-parser",
+  parserOptions: {
+    requireConfigFile: false,
+    ecmaVersion: 2021,
+    sourceType: "module",
+  },
+  rules: {
+    "no-unused-vars": "warn",
+    "no-console": "warn",
+    "no-eval": "error",
+    "prefer-const": "error",
+    "no-var": "error",
+    eqeqeq: "error",
+  },
+}
+</code></pre>
+
+## Salesforce ESLint
 
 When using custom ESLint rulesets for Salesforce components, follow these configuration structures:
 
