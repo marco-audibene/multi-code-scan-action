@@ -1,6 +1,34 @@
 # Code Quality Action
 
-A comprehensive GitHub Action for running code quality checks using PMD and ESLint. **This action supports all languages compatible with PMD and ESLint**, making it suitable for diverse codebases. It includes **specialized support for Salesforce development** with built-in configurations for Apex, Lightning Web Components (LWC), and Aura components.
+A comprehensive GitHub Action for running code quality checks using PMD and ESLint. **This action supports all languages compatible with PMD and ESLint**, making it suitable for diverse codebases including Java, JavaScript, TypeScript, and many others. It includes **specialized support for Salesforce development** with built-in configurations for Apex, Lightning Web Components (LWC), Aura components, and metadata validation.
+
+## Why Choose This Action?
+
+### 🎯 **Universal Language Support**
+Unlike single-language solutions, this action works with **any language supported by PMD or ESLint**. Whether you're building enterprise Java applications, modern TypeScript web apps, or Salesforce solutions, this action adapts to your technology stack.
+
+### 📁 **Organized Rule Management**
+Keep your quality standards maintainable with **segregated rule organization**:
+- **Separate rulesets by technology**: Java rules in `/pmd-rules/java/`, TypeScript rules in `/eslint-rules/typescript/`
+- **Engine-specific folders**: PMD rulesets separate from ESLint configurations
+- **Environment-specific rules**: Different rules for production code vs. test code
+- **Team ownership**: Different teams can maintain their own ruleset files
+
+### 🎯 **Precise File Targeting**
+Scan exactly what matters with **granular file extension control**:
+- **Technology-specific scanning**: Only scan `.java` files with Java rules, `.ts` files with TypeScript rules
+- **Metadata inclusion**: Scan configuration files, XML metadata, and declarative definitions
+- **Performance optimization**: Skip irrelevant files to reduce scan time
+- **Flexible patterns**: Support for complex directory structures and file patterns
+
+### 📋 **Beyond Code: Metadata Quality**
+Quality isn't just about code—it's about your entire solution:
+- **Salesforce metadata**: Validate field definitions, flow configurations, permission sets
+- **Configuration files**: Check XML schemas, JSON configurations, YAML pipelines
+- **Documentation**: Ensure README files, API docs, and comments meet standards
+- **Infrastructure as Code**: Validate Terraform, CloudFormation, and Kubernetes manifests
+
+This holistic approach is especially valuable for **declarative platforms like Salesforce**, where business logic lives in metadata, flows, and configuration rather than just code.
 
 ## Features
 
