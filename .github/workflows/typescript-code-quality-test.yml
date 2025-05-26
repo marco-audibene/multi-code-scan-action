@@ -12,6 +12,8 @@ name: TypeScript Code Quality Test
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - 'language-tests/typescript/files/**'
 
 jobs:
   code-quality-test:

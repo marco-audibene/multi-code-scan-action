@@ -12,6 +12,8 @@ name: Salesforce Code Quality Test
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - 'language-tests/salesforce/files/**'
 
 jobs:
   code-quality-test:
