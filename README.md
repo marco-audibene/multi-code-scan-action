@@ -24,6 +24,10 @@ A comprehensive GitHub Action for running code quality checks using PMD and ESLi
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+    paths:  # Optional: only run when relevant files change
+      - 'src/**'
+      - '.eslintrc.*'
+      - 'pmd-rules/**'
 
 jobs:
   code-scan:
@@ -95,6 +99,72 @@ For Salesforce projects, enable the Salesforce-specific plugins and configuratio
         }
       ]
 </code></pre>
+
+## Manual and Scheduled Scans
+
+For manual testing, debugging, or scheduled quality audits, you can create workflows that scan the entire project using `workflow_dispatch`:
+
+\`\`\`yaml
+name: Full Project Code Quality Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      fail_on_issues:
+        description: 'Fail workflow if quality issues are found'
+        required: false
+        default: 'false'
+        type: boolean
+      scan_path:
+        description: 'Path to scan (default: entire project)'
+        required: false
+        default: 'src/'
+        type: string
+
+  schedule:
+    # Run weekly audit on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  full-audit:
+    name: Full Project Quality Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Full Project Scan
+        uses: your-org/multi-code-scan-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: ${{ github.event.inputs.scan_path || 'src/' }}
+          
+          # Full project scan settings
+          scanChangedFilesOnly: false              # Scan ALL files
+          failOnQualityIssues: ${{ github.event.inputs.fail_on_issues || 'false' }}
+          
+          # Relaxed thresholds for full project audits
+          maxCriticalViolations: 50
+          maxMediumViolations: 200
+          
+          file-types-config: |
+            [
+              {
+                "name": "Java",
+                "sourcePath": "src/main/java/",
+                "fileExtensions": [".java"],
+                "analyzer": "pmd"
+              }
+            ]
+\`\`\`
+
+### When to Use Each Approach
+
+| Workflow Type | Use Case | Scan Scope | Enforcement |
+|---------------|----------|------------|-------------|
+| **Pull Request** | Code review, CI/CD gates | Changed files only | Strict (blocks merging) |
+| **Manual Dispatch** | Testing, debugging, demos | Configurable | Flexible (usually non-blocking) |
+| **Scheduled** | Regular audits, reporting | Entire project | Flexible (monitoring) |
 
 ## Quality Enforcement Modes
 
@@ -224,98 +294,179 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 
 ### Java Project
 
-<pre><code class="language-yaml">- name: Run Code Quality Scan
-  uses: your-org/multi-code-scan-action@v1
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    sourcePath: "src/main/java/"
-    file-types-config: |
-      [
-        {
-          "name": "Java",
-          "sourcePath": "src/main/java/",
-          "fileExtensions": [".java"],
-          "analyzer": "pmd",
-          "rulesPaths": [
-            "./pmd-rules/java-ruleset.xml"
-          ]
-        }
-      ]
+<pre><code class="language-yaml">name: Java Code Quality
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'src/**'
+      - 'pmd-rules/**'
+
+jobs:
+  code-scan:
+    name: Run Code Quality Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Code Quality Scan
+        uses: your-org/multi-code-scan-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "src/main/java/"
+          file-types-config: |
+            [
+              {
+                "name": "Java",
+                "sourcePath": "src/main/java/",
+                "fileExtensions": [".java"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./pmd-rules/java-ruleset.xml"
+                ]
+              }
+            ]
 </code></pre>
 
 ### JavaScript Project
 
-<pre><code class="language-yaml">- name: Run Code Quality Scan
-  uses: your-org/multi-code-scan-action@v1
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    sourcePath: "src/"
-    file-types-config: |
-      [
-        {
-          "name": "JavaScript",
-          "sourcePath": "src/",
-          "fileExtensions": [".js", ".jsx"],
-          "analyzer": "eslint",
-          "rulesPaths": [
-            "./.eslintrc.js"
-          ]
-        }
-      ]
+<pre><code class="language-yaml">name: JavaScript Code Quality
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'src/**'
+      - '.eslintrc.*'
+      - 'package.json'
+
+jobs:
+  code-scan:
+    name: Run Code Quality Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Code Quality Scan
+        uses: your-org/multi-code-scan-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "src/"
+          file-types-config: |
+            [
+              {
+                "name": "JavaScript",
+                "sourcePath": "src/",
+                "fileExtensions": [".js", ".jsx"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./.eslintrc.js"
+                ]
+              }
+            ]
 </code></pre>
 
 ### Salesforce Project (Differential Enforcement)
 
-<pre><code class="language-yaml">- name: Run Code Quality Scan
-  uses: your-org/multi-code-scan-action@v1
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    sourcePath: "force-app/main/default/"
-    installSalesforcePlugins: true
-    # Use differential enforcement for legacy Salesforce projects
-    strictNewFiles: true                         # Any violation in new files fails the check
-    maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
-    maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
-    file-types-config: |
-      [
-        {
-          "name": "Apex class",
-          "sourcePath": "force-app/main/default/classes/",
-          "fileExtensions": [".cls", ".cls-meta.xml"],
-          "analyzer": "pmd",
-          "rulesPaths": [
-            "./pmd-rules/apex-ruleset.xml"
-          ]
-        },
-        {
-          "name": "Apex trigger",
-          "sourcePath": "force-app/main/default/triggers/",
-          "fileExtensions": [".trigger", ".trigger-meta.xml"],
-          "analyzer": "pmd",
-          "rulesPaths": [
-            "./pmd-rules/apex-ruleset.xml"
-          ]
-        },
-        {
-          "name": "LWC",
-          "sourcePath": "force-app/main/default/lwc/",
-          "fileExtensions": [".js", ".html", ".css", ".xml"],
-          "analyzer": "eslint",
-          "rulesPaths": [
-            "./eslint-rules/lwc-ruleset.js"
-          ]
-        },
-        {
-          "name": "Aura",
-          "sourcePath": "force-app/main/default/aura/",
-          "fileExtensions": [".js", ".cmp", ".app", ".evt", ".intf", ".design", ".css", ".xml"],
-          "analyzer": "eslint",
-          "rulesPaths": [
-            "./eslint-rules/aura-ruleset.js"
-          ]
-        }
-      ]
+<pre><code class="language-yaml">name: Salesforce Code Quality
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'force-app/**'
+      - 'pmd-rules/**'
+      - 'eslint-rules/**'
+
+jobs:
+  code-scan:
+    name: Run Code Quality Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Code Quality Scan
+        uses: your-org/multi-code-scan-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "force-app/main/default/"
+          installSalesforcePlugins: true
+          # Use differential enforcement for legacy Salesforce projects
+          strictNewFiles: true                         # Any violation in new files fails the check
+          maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
+          maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
+          file-types-config: |
+            [
+              {
+                "name": "Apex class",
+                "sourcePath": "force-app/main/default/classes/",
+                "fileExtensions": [".cls", ".cls-meta.xml"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./pmd-rules/apex-ruleset.xml"
+                ]
+              },
+              {
+                "name": "Apex trigger",
+                "sourcePath": "force-app/main/default/triggers/",
+                "fileExtensions": [".trigger", ".trigger-meta.xml"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./pmd-rules/apex-ruleset.xml"
+                ]
+              },
+              {
+                "name": "LWC",
+                "sourcePath": "force-app/main/default/lwc/",
+                "fileExtensions": [".js", ".html", ".css", ".xml"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./eslint-rules/lwc-ruleset.js"
+                ]
+              },
+              {
+                "name": "Aura",
+                "sourcePath": "force-app/main/default/aura/",
+                "fileExtensions": [".js", ".cmp", ".app", ".evt", ".intf", ".design", ".css", ".xml"],
+                "analyzer": "eslint",
+                "rulesPaths": [
+                  "./eslint-rules/aura-ruleset.js"
+                ]
+              }
+            ]
 </code></pre>
+
+## Path Filtering (Optional Optimization)
+
+You can optimize workflow execution by adding path filters to only run when relevant files change:
+
+\`\`\`yaml
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'src/**'                    # Source code
+      - '.eslintrc.*'               # ESLint config files
+      - 'pmd-rules/**'              # PMD ruleset files
+      - 'package.json'              # Dependencies
+      - '.github/workflows/**'      # Workflow changes
+\`\`\`
+
+### Common Path Patterns
+
+| Pattern | Description | Example Use Case |
+|---------|-------------|------------------|
+| `src/**` | All files in src directory and subdirectories | Source code changes |
+| `force-app/**` | Salesforce metadata and code | Salesforce projects |
+| `*.js` | JavaScript files in root | Config file changes |
+| `.eslintrc.*` | ESLint configuration files | Rule changes |
+| `pmd-rules/**` | PMD ruleset files | PMD rule changes |
+
+**Note**: Path filters are optional but recommended for large repositories to avoid unnecessary workflow runs.
 
 ## Using the Action Required Output
 
