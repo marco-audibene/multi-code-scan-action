@@ -6,8 +6,7 @@ This directory contains test files and rulesets for various languages and techno
 
 Each language or technology has its own subdirectory with the following structure:
 
-\`\`\`
-language-tests/
+<pre><code>language-tests/
 ├── [technology-name]/
 │   ├── files/
 │   │   └── [file-type]/
@@ -15,7 +14,7 @@ language-tests/
 │   └── rulesets/
 │       └── [analyzer]/
 │           └── [ruleset files]
-\`\`\`
+</code></pre>
 
 ## Available Tests
 
