@@ -4,8 +4,7 @@ This directory contains test files and rulesets for TypeScript development.
 
 ## Structure
 
-\`\`\`
-typescript/
+<pre><code>typescript/
 ├── files/
 │   ├── src/
 │   │   ├── basic.ts
@@ -17,7 +16,7 @@ typescript/
 └── rulesets/
     └── eslint/
         └── standard-ruleset.js
-\`\`\`
+</code></pre>
 
 ## Test Files
 
@@ -39,9 +38,6 @@ The test files contain intentional code quality issues that should be detected b
 
 ## Running Tests
 
-These tests are run using the \`typescript-code-quality-test.yml\` workflow, which executes the multi-code-scan-action against these test files using the provided rulesets.
+These tests are run using the `typescript-code-quality-test.yml` workflow, which executes the multi-code-scan-action against these test files using the provided rulesets.
 
 The action should detect the intentional violations in each file type and report them as annotations in GitHub.
-\`\`\`
-
-## 3. Create Test Files with Intentional Violations

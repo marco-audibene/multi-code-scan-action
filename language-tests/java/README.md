@@ -4,8 +4,7 @@ This directory contains test files and rulesets for Java development.
 
 ## Structure
 
-\`\`\`
-java/
+<pre><code>java/
 ├── files/
 │   ├── src/
 │   │   ├── main/java/com/example/
@@ -18,7 +17,7 @@ java/
 └── rulesets/
     └── pmd/
         └── standard-ruleset.xml
-\`\`\`
+</code></pre>
 
 ## Test Files
 
@@ -76,7 +75,7 @@ The ruleset includes rules from all major PMD categories:
 
 ## Running Tests
 
-These tests are run using the \`java-code-quality-test.yml\` workflow, which executes the multi-code-scan-action against these test files using the provided rulesets.
+These tests are run using the `java-code-quality-test.yml` workflow, which executes the multi-code-scan-action against these test files using the provided rulesets.
 
 The action should detect the intentional violations in each file type and report them as annotations in GitHub.
 
@@ -89,4 +88,3 @@ When run against these test files, the action should detect violations including
 - **Best Practices**: Resource leaks, empty catch blocks
 - **Code Style**: Public fields, naming conventions
 - **Error Prone**: Missing hashCode, unused variables
-\`\`\`
