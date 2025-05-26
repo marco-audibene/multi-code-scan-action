@@ -4,8 +4,7 @@ This directory contains test files and rulesets for Salesforce technologies.
 
 ## Structure
 
-\`\`\`
-salesforce/
+<pre><code>salesforce/
 ├── files/
 │   ├── classes/
 │   │   ├── TestController.cls
@@ -36,7 +35,7 @@ salesforce/
         │   └── standard-ruleset.js
         └── aura/
             └── standard-ruleset.js
-\`\`\`
+</code></pre>
 
 ## Test Files
 
