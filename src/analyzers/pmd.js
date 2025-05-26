@@ -70,6 +70,9 @@ async function runPMD(fileType, filesToScan, enableCache = false) {
   // Log analysis in progress
   logInfo(`Analysis in progress...`)
 
+  // DEBUG: Log the exact command being run
+  logInfo(`Running command: pmd ${pmdArgs.join(" ")}`)
+
   // Run PMD
   const options = {
     ignoreReturnCode: true,

@@ -104,8 +104,7 @@ For Salesforce projects, enable the Salesforce-specific plugins and configuratio
 
 For manual testing, debugging, or scheduled quality audits, you can create workflows that scan the entire project using `workflow_dispatch`:
 
-\`\`\`yaml
-name: Full Project Code Quality Audit
+<pre><code class="language-yaml">name: Full Project Code Quality Audit
 
 on:
   workflow_dispatch:
@@ -156,7 +155,7 @@ jobs:
                 "analyzer": "pmd"
               }
             ]
-\`\`\`
+</code></pre>
 
 ### When to Use Each Approach
 
@@ -289,6 +288,116 @@ If `rulesPaths` is not specified, the action will use default rulesets:
 - If no rulesets are specified and `installSalesforcePlugins` is false:
   - It uses "standard-js-config.json" for all JavaScript files
 - The log will show: `Using standard configuration: standard-js-config.json` or similar
+
+## PMD Ruleset Configuration
+
+PMD supports many languages including Java, Apex, JavaScript, and XML. You can create custom XML ruleset files to define which rules to apply.
+
+For complete rule documentation and configuration syntax, see:
+- [PMD Rule Reference](https://pmd.github.io/pmd/pmd_rules_java.html) (Java)
+- [PMD Apex Rules](https://pmd.github.io/pmd/pmd_rules_apex.html) (Salesforce Apex)
+- [PMD Ruleset Configuration](https://pmd.github.io/pmd/pmd_userdocs_making_rulesets.html) (General ruleset syntax)
+
+## ESLint Configuration
+
+When using custom ESLint rulesets, you can create JavaScript configuration files to define which rules to apply.
+
+### Standard JavaScript/TypeScript
+
+<pre><code class="language-javascript">// eslint-rules/standard-ruleset.js
+module.exports = {
+  env: {
+    browser: true,
+    es2021: true,
+    node: true,
+  },
+  extends: ["eslint:recommended"],
+  parser: "@babel/eslint-parser",
+  parserOptions: {
+    requireConfigFile: false,
+    ecmaVersion: 2021,
+    sourceType: "module",
+  },
+  rules: {
+    "no-unused-vars": "warn",
+    "no-console": "warn",
+    "no-eval": "error",
+    "prefer-const": "error",
+    "no-var": "error",
+    eqeqeq: "error",
+  },
+}
+</code></pre>
+
+## Salesforce ESLint
+
+When using custom ESLint rulesets for Salesforce components, follow these configuration structures:
+
+### Lightning Web Components (LWC)
+
+<pre><code class="language-javascript">// eslint-rules/lwc-ruleset.js
+module.exports = {
+  parser: "@babel/eslint-parser",
+  parserOptions: {
+    requireConfigFile: false,
+    babelOptions: {
+      parserOpts: {
+        plugins: ["classProperties", ["decorators", { decoratorsBeforeExport: false }]],
+      },
+    },
+  },
+  plugins: ["@lwc/eslint-plugin-lwc"],
+  rules: {
+    "no-console": ["warn", { allow: ["error"] }],
+    "no-eval": "error",
+    "no-unused-vars": "error",
+    "@lwc/lwc/no-async-operation": "error",
+    "@lwc/lwc/no-inner-html": "error",
+    "@lwc/lwc/no-document-query": "error",
+  },
+}
+</code></pre>
+
+### Aura Components
+
+<pre><code class="language-javascript">// eslint-rules/aura-ruleset.js
+module.exports = {
+  parser: "@babel/eslint-parser",
+  parserOptions: {
+    requireConfigFile: false,
+    ecmaVersion: 2018,
+    sourceType: "script",
+  },
+  plugins: ["@salesforce/eslint-plugin-aura"],
+  rules: {
+    "no-console": ["warn", { allow: ["error"] }],
+    "no-eval": "error",
+    "no-alert": "error",
+    "no-unused-vars": "error",
+    "@salesforce/aura/no-deprecated-component": "error",
+    "@salesforce/aura/no-js-in-markup": "error",
+  },
+}
+</code></pre>
+
+### Key Configuration Notes:
+
+1. **Parser Configuration**: Both LWC and Aura require `@babel/eslint-parser` with specific parser options
+2. **Plugins**: 
+   - LWC uses `@lwc/eslint-plugin-lwc`
+   - Aura uses `@salesforce/eslint-plugin-aura`
+3. **Parser Options**:
+   - LWC: `sourceType: "module"` with decorators and class properties support
+   - Aura: `sourceType: "script"` with ES2018 features
+4. **Rule Prefixes**:
+   - LWC rules: `@lwc/lwc/rule-name`
+   - Aura rules: `@salesforce/aura/rule-name`
+
+### Salesforce ESLint Rules
+
+For complete rule documentation, see:
+- [LWC ESLint Rules](https://github.com/salesforce/eslint-plugin-lwc/tree/master/docs/rules)
+- [Aura ESLint Rules](https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules)
 
 ## Examples
 
@@ -444,8 +553,7 @@ jobs:
 
 You can optimize workflow execution by adding path filters to only run when relevant files change:
 
-\`\`\`yaml
-on:
+<pre><code class="language-yaml">on:
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
@@ -454,7 +562,7 @@ on:
       - 'pmd-rules/**'              # PMD ruleset files
       - 'package.json'              # Dependencies
       - '.github/workflows/**'      # Workflow changes
-\`\`\`
+</code></pre>
 
 ### Common Path Patterns
 
