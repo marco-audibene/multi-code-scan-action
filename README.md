@@ -23,7 +23,7 @@ Scan exactly what matters with **granular file extension control**:
 
 ### 📋 **Beyond Code: Metadata Quality**
 Quality isn't just about code—it's about your entire solution:
-- **Salesforce metadata**: Validate field definitions, flow configurations, permission sets
+- **Salesforce metadata**: Validate any kind of metadata such as field definitions, flow configurations, permission sets, etc.
 - **Configuration files**: Check XML schemas, JSON configurations, YAML pipelines
 - **Documentation**: Ensure README files, API docs, and comments meet standards
 - **Infrastructure as Code**: Validate Terraform, CloudFormation, and Kubernetes manifests
