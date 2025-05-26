@@ -6,7 +6,7 @@
       // Violation: eval usage
       eval("1 + 1")
   
-      // Get the record ID
+      // Get the record ID.
       var recordId = component.get("v.recordId")
   
       // Violation: alert usage.
