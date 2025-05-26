@@ -118,8 +118,15 @@ async function createCheckRun(token, violations, checkName) {
  * @param {Array} violations - All violations to report
  * @param {Array} newFileViolations - Violations in new files
  * @param {Array} modifiedFileViolations - Violations in modified files
+ * @param {string} checkName - Name of the check (for comment title)
  */
-async function createPRComment(token, violations, newFileViolations, modifiedFileViolations) {
+async function createPRComment(
+  token,
+  violations,
+  newFileViolations,
+  modifiedFileViolations,
+  checkName = "Code Quality Scan", // Fixed to match action.yml default
+) {
   logInfo(`Creating PR comment for ${violations.length} violations`)
 
   const octokit = github.getOctokit(token)
@@ -135,22 +142,24 @@ async function createPRComment(token, violations, newFileViolations, modifiedFil
     violationsByFile[v.file].push(v)
   })
 
-  // Create markdown table
-  let commentBody = "## Code Quality Violations\n\n"
+  // Create markdown table with custom check name
+  let commentBody = `## ${checkName} Results\n\n`
+
+  // Add key metrics summary
+  const totalViolations = violations.length
+  const criticalViolations = violations.filter((v) => v.severity === "critical" || v.severity === "high").length
+  const mediumViolations = violations.filter((v) => v.severity === "medium").length
+  const actionRequired = newFileViolations.length > 0 || modifiedFileViolations.length > 0
+
+  commentBody += "### 📊 Summary\n\n"
+  commentBody += `- **Total violations:** ${totalViolations}\n`
+  commentBody += `- **Critical/High violations:** ${criticalViolations}\n`
+  commentBody += `- **Medium violations:** ${mediumViolations}\n`
+  commentBody += `- **Low/Info violations:** ${totalViolations - criticalViolations - mediumViolations}\n`
+  commentBody += `- **Action required:** ${actionRequired ? "🚨 **YES**" : "✅ **NO**"}\n\n`
 
   // Add summary information
-  commentBody += "### Summary\n\n"
-  commentBody += `- Total violations: **${violations.length}**\n`
-  commentBody += `- Violations in new files: **${newFileViolations.length}**\n`
-  commentBody += `- Violations in modified files: **${modifiedFileViolations.length}**\n\n`
-
-  // Add note about new files
-  if (newFileViolations.length > 0) {
-    commentBody += "⚠️ **Note:** New files must have zero violations to pass the quality check.\n\n"
-  }
-
-  // Add summary by file
-  commentBody += "### Summary by File\n\n"
+  commentBody += "### 📁 File Summary\n\n"
   commentBody += "| File | Violations | Status |\n"
   commentBody += "| ---- | ---------- | ------ |\n"
 

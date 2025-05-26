@@ -35290,6 +35290,7 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     "--output-file",
     resultPath,
     "--no-error-on-unmatched-pattern",
+    "--no-eslintrc", // Add this flag back
   ]
 
   // Add config if specified
@@ -35317,7 +35318,6 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
   // Add files to scan
   eslintArgs.push(...filesToScan)
 
-  let stdout = ""
   let stderr = ""
 
   // Run ESLint
@@ -35325,9 +35325,6 @@ async function runESLint(fileType, filesToScan, enableCache = false) {
     ignoreReturnCode: true,
     silent: true, // Back to silent for cleaner output
     listeners: {
-      stdout: (data) => {
-        stdout += data.toString()
-      },
       stderr: (data) => {
         stderr += data.toString()
       },
@@ -35825,13 +35822,11 @@ function evaluateResults(violationsObj, config) {
   const newFileCriticalViolations = newFileViolations.filter(
     (v) => v.severity === "critical" || v.severity === "high",
   ).length
-  const newFileMediumViolations = newFileViolations.filter((v) => v.severity === "medium").length
 
   // Count violations in modified files by severity
   const modifiedFileCriticalViolations = modifiedFileViolations.filter(
     (v) => v.severity === "critical" || v.severity === "high",
   ).length
-  const modifiedFileMediumViolations = modifiedFileViolations.filter((v) => v.severity === "medium").length
 
   logSectionHeader("Results Summary")
   logInfo(`Total violations: ${allViolations.length}`)
@@ -35849,16 +35844,6 @@ function evaluateResults(violationsObj, config) {
   setOutput("medium-violations", mediumViolations)
   setOutput("new-file-violations", newFileViolations.length)
   setOutput("modified-file-violations", modifiedFileViolations.length)
-
-  // Set violations as JSON output
-  try {
-    // Convert violations to JSON string
-    const violationsJson = JSON.stringify(allViolations)
-    setOutput("violations", violationsJson)
-    logInfo("Violations data set as output")
-  } catch (error) {
-    logWarning(`Failed to set violations as output: ${error.message}`)
-  }
 
   // Determine if action should fail based on thresholds
   let shouldFail = false
@@ -35902,6 +35887,19 @@ function evaluateResults(violationsObj, config) {
         `Overall medium violations: ${mediumViolations} ` + `(threshold: ${config.maxMediumViolations})`,
       )
     }
+  }
+
+  // Set the action required flag
+  setOutput("action-required", shouldFail)
+
+  // Set violations as JSON output
+  try {
+    // Convert violations to JSON string
+    const violationsJson = JSON.stringify(allViolations)
+    setOutput("violations", violationsJson)
+    logInfo("Violations data set as output")
+  } catch (error) {
+    logWarning(`Failed to set violations as output: ${error.message}`)
   }
 
   if (shouldFail && config.failOnQualityIssues) {
@@ -36130,8 +36128,15 @@ async function createCheckRun(token, violations, checkName) {
  * @param {Array} violations - All violations to report
  * @param {Array} newFileViolations - Violations in new files
  * @param {Array} modifiedFileViolations - Violations in modified files
+ * @param {string} checkName - Name of the check (for comment title)
  */
-async function createPRComment(token, violations, newFileViolations, modifiedFileViolations) {
+async function createPRComment(
+  token,
+  violations,
+  newFileViolations,
+  modifiedFileViolations,
+  checkName = "Code Quality Scan", // Fixed to match action.yml default
+) {
   logInfo(`Creating PR comment for ${violations.length} violations`)
 
   const octokit = github.getOctokit(token)
@@ -36147,22 +36152,24 @@ async function createPRComment(token, violations, newFileViolations, modifiedFil
     violationsByFile[v.file].push(v)
   })
 
-  // Create markdown table
-  let commentBody = "## Code Quality Violations\n\n"
+  // Create markdown table with custom check name
+  let commentBody = `## ${checkName} Results\n\n`
+
+  // Add key metrics summary
+  const totalViolations = violations.length
+  const criticalViolations = violations.filter((v) => v.severity === "critical" || v.severity === "high").length
+  const mediumViolations = violations.filter((v) => v.severity === "medium").length
+  const actionRequired = newFileViolations.length > 0 || modifiedFileViolations.length > 0
+
+  commentBody += "### 📊 Summary\n\n"
+  commentBody += `- **Total violations:** ${totalViolations}\n`
+  commentBody += `- **Critical/High violations:** ${criticalViolations}\n`
+  commentBody += `- **Medium violations:** ${mediumViolations}\n`
+  commentBody += `- **Low/Info violations:** ${totalViolations - criticalViolations - mediumViolations}\n`
+  commentBody += `- **Action required:** ${actionRequired ? "🚨 **YES**" : "✅ **NO**"}\n\n`
 
   // Add summary information
-  commentBody += "### Summary\n\n"
-  commentBody += `- Total violations: **${violations.length}**\n`
-  commentBody += `- Violations in new files: **${newFileViolations.length}**\n`
-  commentBody += `- Violations in modified files: **${modifiedFileViolations.length}**\n\n`
-
-  // Add note about new files
-  if (newFileViolations.length > 0) {
-    commentBody += "⚠️ **Note:** New files must have zero violations to pass the quality check.\n\n"
-  }
-
-  // Add summary by file
-  commentBody += "### Summary by File\n\n"
+  commentBody += "### 📁 File Summary\n\n"
   commentBody += "| File | Violations | Status |\n"
   commentBody += "| ---- | ---------- | ------ |\n"
 
@@ -36348,8 +36355,9 @@ async function createAnnotations(token, violations, checkName) {
  * Creates a PR comment with violations summary
  * @param {string} token - GitHub token
  * @param {Array} violations - Violations to report
+ * @param {string} checkName - Name of the check (for comment title)
  */
-async function createPRComment(token, violations) {
+async function createPRComment(token, violations, checkName = "Code Quality") {
   logInfo(`Creating PR comment for ${violations.length} violations`)
 
   const octokit = github.getOctokit(token)
@@ -36365,8 +36373,8 @@ async function createPRComment(token, violations) {
     violationsByFile[v.file].push(v)
   })
 
-  // Create markdown table
-  let commentBody = "## Code Quality Violations\n\n"
+  // Create markdown table with custom check name
+  let commentBody = `## ${checkName} Results\n\n`
   commentBody += "The following code quality violations were found in this PR:\n\n"
 
   // Add summary by file
@@ -39531,7 +39539,6 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const { execSync } = __nccwpck_require__(2081)
-const path = __nccwpck_require__(1017)
 const installer = __nccwpck_require__(8530)
 const { loadConfig } = __nccwpck_require__(4570)
 const { initializeScan, runScan, createOutputDirectory, evaluateResults } = __nccwpck_require__(225)
@@ -39596,6 +39603,7 @@ async function run() {
             violationsObj.allViolations,
             violationsObj.newFileViolations,
             violationsObj.modifiedFileViolations,
+            config.checkName, // Pass the check name to the PR comment
           )
         }
       }

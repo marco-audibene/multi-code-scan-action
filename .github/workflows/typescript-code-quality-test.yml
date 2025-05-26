@@ -30,11 +30,13 @@ jobs:
       
       # Run the action against the test TypeScript files
       - name: Run action on TypeScript test files
+        id: code-scan
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sourcePath: "language-tests/typescript/files/"
           installTypeScriptPlugins: true
+          check-name: "TypeScript Quality Check"
           
           # Differential Enforcement Settings (our current defaults - explicitly set for clarity)
           strictNewFiles: true                         # Any violation in new files fails the check
@@ -66,3 +68,8 @@ jobs:
                 ]
               }
             ]
+
+      # Check if action is required based on violations
+      - name: Check if action required
+        if: steps.code-scan.outputs.action-required == 'true'
+        run: echo "Violations require developer action!"
