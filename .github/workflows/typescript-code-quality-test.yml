@@ -10,15 +10,8 @@
 name: TypeScript Code Quality Test
 
 on:
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
   pull_request:
     branches: [ main ]
-  # Allow manual triggering
-  workflow_dispatch:
 
 jobs:
   code-quality-test:
