@@ -1,0 +1,75 @@
+# Java Code Quality Manual Test Workflow
+#
+# Purpose:
+# This workflow allows manual testing of the action against Java code files.
+# It scans all files (not just changed ones) and is useful for:
+# - Testing the action manually
+# - Debugging issues
+# - Demonstrating functionality
+# - Running quality checks on any branch
+
+name: Java Code Quality Manual Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      fail_on_issues:
+        description: 'Fail workflow if quality issues are found'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  code-quality-manual-test:
+    name: Manual Test on Java Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # Run the action against all Java test files
+      - name: Run action on all Java test files
+        id: code-scan
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "language-tests/java/files/"
+          check-name: "Java Manual Quality Check"
+          
+          # Manual test settings - scan all files, don't fail by default
+          scanChangedFilesOnly: false                  # Scan all files (no PR context)
+          failOnQualityIssues: ${{ github.event.inputs.fail_on_issues }}
+          
+          # Relaxed thresholds for manual testing
+          maxCriticalViolations: 50
+          maxMediumViolations: 100
+          
+          file-types-config: |
+            [
+              {
+                "name": "Java Source",
+                "sourcePath": "language-tests/java/files/src/main/java/",
+                "fileExtensions": [".java"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/java/rulesets/pmd/standard-ruleset.xml"
+                ]
+              },
+              {
+                "name": "Java Tests",
+                "sourcePath": "language-tests/java/files/src/test/java/",
+                "fileExtensions": [".java"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/java/rulesets/pmd/standard-ruleset.xml"
+                ]
+              }
+            ]
+
+      # Show results summary
+      - name: Show results summary
+        run: |
+          echo "Total violations: ${{ steps.code-scan.outputs.total-violations }}"
+          echo "Critical violations: ${{ steps.code-scan.outputs.critical-violations }}"
+          echo "Medium violations: ${{ steps.code-scan.outputs.medium-violations }}"
+          echo "Action required: ${{ steps.code-scan.outputs.action-required }}"
