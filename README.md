@@ -369,6 +369,103 @@ For complete rule documentation, see:
 - [LWC ESLint Rules](https://github.com/salesforce/eslint-plugin-lwc/tree/master/docs/rules)
 - [Aura ESLint Rules](https://github.com/forcedotcom/eslint-plugin-aura/tree/master/docs/rules)
 
+## PMD Ruleset Configuration
+
+When using custom PMD rulesets, you can create XML files that define which rules to apply. PMD supports many languages including Java, Apex, JavaScript, and XML.
+
+### Basic PMD Ruleset Structure
+
+<pre><code class="language-xml"><?xml version="1.0"?>
+<ruleset name="Custom Rules"
+        xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    
+    <description>Custom PMD rules for your project</description>
+    
+    <!-- Include entire rule categories -->
+    <rule ref="category/java/bestpractices.xml" />
+    <rule ref="category/java/codestyle.xml" />
+    <rule ref="category/java/design.xml" />
+    <rule ref="category/java/errorprone.xml" />
+    <rule ref="category/java/performance.xml" />
+    <rule ref="category/java/security.xml" />
+    
+    <!-- Exclude specific rules -->
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="AtLeastOneConstructor" />
+        <exclude name="CommentDefaultAccessModifier" />
+    </rule>
+    
+    <!-- Customize rule properties -->
+    <rule ref="category/java/design.xml/TooManyMethods">
+        <properties>
+            <property name="maxmethods" value="15" />
+        </properties>
+    </rule>
+</ruleset>
+</code></pre>
+
+### Salesforce Apex PMD Ruleset
+
+<pre><code class="language-xml"><?xml version="1.0"?>
+<ruleset name="Apex Rules"
+        xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    
+    <description>Standard rules for Apex development</description>
+    
+    <!-- Salesforce-specific rule categories -->
+    <rule ref="category/apex/security.xml" />
+    <rule ref="category/apex/bestpractices.xml" />      
+    <rule ref="category/apex/design.xml" />
+    <rule ref="category/apex/performance.xml" /> 
+    <rule ref="category/apex/codestyle.xml" />
+    <rule ref="category/apex/errorprone.xml" />
+    
+    <!-- Customize Apex-specific rules -->
+    <rule ref="category/apex/design.xml/ExcessiveClassLength">
+        <properties>
+            <property name="minimum" value="1000" />
+        </properties>
+    </rule>
+    
+    <rule ref="category/apex/design.xml/ExcessiveMethodLength">
+        <properties>
+            <property name="minimum" value="100" />
+        </properties>
+    </rule>
+</ruleset>
+</code></pre>
+
+### Key PMD Configuration Notes:
+
+1. **Rule Categories**: PMD organizes rules into categories like `bestpractices`, `codestyle`, `design`, `errorprone`, `performance`, and `security`
+2. **Language-Specific Rules**: 
+   - Java: `category/java/[category].xml`
+   - Apex: `category/apex/[category].xml`
+   - JavaScript: `category/ecmascript/[category].xml`
+   - XML: `category/xml/[category].xml`
+3. **Rule Customization**: You can exclude specific rules or modify their properties
+4. **Multiple Rulesets**: You can reference multiple ruleset files in the `rulesPaths` array
+
+### Common PMD Rule Categories:
+
+| Category | Description | Example Rules |
+|----------|-------------|---------------|
+| **Security** | Security vulnerabilities and best practices | `AvoidHardCodedCredentials`, `ApexSharingViolations` |
+| **Best Practices** | Coding best practices | `AvoidReassigningParameters`, `UnusedLocalVariable` |
+| **Design** | Code design and architecture | `ExcessiveMethodLength`, `TooManyFields` |
+| **Error Prone** | Common programming errors | `AvoidBranchingStatementAsLastInLoop`, `EmptyIfStmt` |
+| **Performance** | Performance-related issues | `AvoidInstantiatingObjectsInLoops`, `StringInstantiation` |
+| **Code Style** | Code formatting and style | `ClassNamingConventions`, `MethodNamingConventions` |
+
+For complete rule documentation and available categories, see:
+- [PMD Rule Reference](https://pmd.github.io/pmd/pmd_rules_java.html) (Java)
+- [PMD Apex Rules](https://pmd.github.io/pmd/pmd_rules_apex.html) (Salesforce Apex)
+- [PMD Ruleset Configuration](https://pmd.github.io/pmd/pmd_userdocs_making_rulesets.html) (General ruleset syntax)
+
 ## Examples
 
 ### Java Project
