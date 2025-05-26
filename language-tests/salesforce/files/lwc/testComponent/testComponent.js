@@ -3,7 +3,7 @@ import { LightningElement, api } from "lwc"
 export default class TestComponent extends LightningElement {
   @api recordId
 
-  // Violation: console.log
+  // Violation: console.log 
   connectedCallback() {
     console.log("Component initialized.")
 
