@@ -1,5 +1,5 @@
 public with sharing class TestController {
-    // Violation: Unused variable
+    // Violation: Unused variable 
     private String unusedVar;
     
     // Violation: Method too long
