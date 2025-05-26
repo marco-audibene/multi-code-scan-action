@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<ruleset name="Java Standard Rules"
+        xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    
+    <description>Standard rules for Java development</description>
+    
+    <!-- Best Practices -->
+    <rule ref="category/java/bestpractices.xml">
+        <!-- Exclude some rules that might be too strict for demo -->
+        <exclude name="JUnitTestContainsTooManyAsserts"/>
+    </rule>
+    
+    <!-- Code Style -->
+    <rule ref="category/java/codestyle.xml">
+        <!-- Exclude some formatting rules -->
+        <exclude name="AtLeastOneConstructor"/>
+        <exclude name="CommentDefaultAccessModifier"/>
+        <exclude name="DefaultPackage"/>
+        <exclude name="OnlyOneReturn"/>
+    </rule>
+    
+    <!-- Design -->
+    <rule ref="category/java/design.xml">
+        <!-- Customize complexity thresholds for demo -->
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="NPathComplexity"/>
+    </rule>
+    
+    <!-- Custom complexity rules with lower thresholds for demo -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="methodReportLevel" value="5"/>
+        </properties>
+    </rule>
+    
+    <rule ref="category/java/design.xml/NPathComplexity">
+        <properties>
+            <property name="reportLevel" value="50"/>
+        </properties>
+    </rule>
+    
+    <!-- Error Prone -->
+    <rule ref="category/java/errorprone.xml"/>
+    
+    <!-- Performance -->
+    <rule ref="category/java/performance.xml"/>
+    
+    <!-- Security -->
+    <rule ref="category/java/security.xml"/>
+    
+    <!-- Documentation -->
+    <rule ref="category/java/documentation.xml">
+        <!-- Make documentation rules less strict for demo -->
+        <exclude name="CommentRequired"/>
+    </rule>
+    
+</ruleset>

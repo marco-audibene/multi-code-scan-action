@@ -1,0 +1,69 @@
+# Java Code Quality Test Workflow
+#
+# Purpose:
+# This workflow tests the action against sample Java code files using PMD rulesets.
+# It uses test files from the language-tests/java/files directory and 
+# rulesets from the language-tests/java/rulesets directory.
+#
+# The test files contain intentional code quality issues that should be detected by the action.
+
+name: Java Code Quality Test
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'language-tests/java/files/**'
+
+jobs:
+  code-quality-test:
+    name: Run Action on Java Test Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # Run the action against the test Java files
+      - name: Run action on Java test files
+        id: code-scan
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sourcePath: "language-tests/java/files/"
+          check-name: "Java Quality Check"
+          
+          # Differential Enforcement Settings (our current defaults - explicitly set for clarity)
+          strictNewFiles: true                         # Any violation in new files fails the check
+          maxViolationsForModifiedFiles: 10            # Allow up to 10 violations in modified files
+          maxCriticalViolationsForModifiedFiles: 0     # Don't allow any critical violations in modified files
+          failOnQualityIssues: true                    # Fail the workflow if quality thresholds are exceeded
+          
+          # File scanning strategy
+          scanChangedFilesOnly: true                   # Only scan changed files (enables differential enforcement)
+          
+          file-types-config: |
+            [
+              {
+                "name": "Java Source",
+                "sourcePath": "language-tests/java/files/src/main/java/",
+                "fileExtensions": [".java"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/java/rulesets/pmd/standard-ruleset.xml"
+                ]
+              },
+              {
+                "name": "Java Tests",
+                "sourcePath": "language-tests/java/files/src/test/java/",
+                "fileExtensions": [".java"],
+                "analyzer": "pmd",
+                "rulesPaths": [
+                  "./language-tests/java/rulesets/pmd/standard-ruleset.xml"
+                ]
+              }
+            ]
+
+      # Check if action is required based on violations
+      - name: Check if action required
+        if: steps.code-scan.outputs.action-required == 'true'
+        run: echo "Violations require developer action!"
