@@ -104,8 +104,7 @@ For Salesforce projects, enable the Salesforce-specific plugins and configuratio
 
 For manual testing, debugging, or scheduled quality audits, you can create workflows that scan the entire project using `workflow_dispatch`:
 
-\`\`\`yaml
-name: Full Project Code Quality Audit
+<pre><code class="language-yaml">name: Full Project Code Quality Audit
 
 on:
   workflow_dispatch:
@@ -156,7 +155,7 @@ jobs:
                 "analyzer": "pmd"
               }
             ]
-\`\`\`
+</code></pre>
 
 ### When to Use Each Approach
 
@@ -296,8 +295,7 @@ When using custom ESLint rulesets for Salesforce components, follow these config
 
 ### Lightning Web Components (LWC)
 
-\`\`\`javascript
-// eslint-rules/lwc-ruleset.js
+<pre><code class="language-javascript">// eslint-rules/lwc-ruleset.js
 module.exports = {
   parser: "@babel/eslint-parser",
   parserOptions: {
@@ -318,12 +316,11 @@ module.exports = {
     "@lwc/lwc/no-document-query": "error",
   },
 }
-\`\`\`
+</code></pre>
 
 ### Aura Components
 
-\`\`\`javascript
-// eslint-rules/aura-ruleset.js
+<pre><code class="language-javascript">// eslint-rules/aura-ruleset.js
 module.exports = {
   parser: "@babel/eslint-parser",
   parserOptions: {
@@ -341,7 +338,7 @@ module.exports = {
     "@salesforce/aura/no-js-in-markup": "error",
   },
 }
-\`\`\`
+</code></pre>
 
 ### Key Configuration Notes:
 
@@ -526,8 +523,7 @@ jobs:
 
 You can optimize workflow execution by adding path filters to only run when relevant files change:
 
-\`\`\`yaml
-on:
+<pre><code class="language-yaml">on:
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
@@ -536,7 +532,7 @@ on:
       - 'pmd-rules/**'              # PMD ruleset files
       - 'package.json'              # Dependencies
       - '.github/workflows/**'      # Workflow changes
-\`\`\`
+</code></pre>
 
 ### Common Path Patterns
 
