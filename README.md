@@ -393,17 +393,7 @@ module.exports = {
    - LWC rules: `@lwc/lwc/rule-name`
    - Aura rules: `@salesforce/aura/rule-name`
 
-### Common Salesforce ESLint Rules:
-
-| Component Type | Rule | Description |
-|----------------|------|-------------|
-| **LWC** | `@lwc/lwc/no-async-operation` | Prevents setTimeout/setInterval usage |
-| **LWC** | `@lwc/lwc/no-inner-html` | Prevents innerHTML usage for security |
-| **LWC** | `@lwc/lwc/no-document-query` | Prevents direct DOM queries |
-| **Aura** | `@salesforce/aura/no-deprecated-component` | Flags deprecated Aura components |
-| **Aura** | `@salesforce/aura/no-js-in-markup` | Prevents JavaScript in markup |
-| **Both** | `no-console` | Restricts console usage (allow error only) |
-| **Both** | `no-eval` | Prevents eval() usage for security |
+### Salesforce ESLint Rules
 
 For complete rule documentation, see:
 - [LWC ESLint Rules](https://github.com/salesforce/eslint-plugin-lwc/tree/master/docs/rules)
