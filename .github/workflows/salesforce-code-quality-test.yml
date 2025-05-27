@@ -26,7 +26,6 @@ jobs:
       # Run the action against the test Salesforce files
       - name: Run action on Salesforce test files
         id: code-scan
-        continue-on-error: true  # This is the key! Allows subsequent steps to run even if this step fails
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -84,6 +83,7 @@ jobs:
             ]
 
       # Check if action is required based on violations
+      # Using if: always() && condition to run even if previous step failed
       - name: Check if action required
-        if: steps.code-scan.outputs.action-required == 1
+        if: always() && steps.code-scan.outputs.action-required == 1
         run: echo "Violations require developer action!"
