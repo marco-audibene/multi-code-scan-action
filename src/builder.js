@@ -198,8 +198,8 @@ function evaluateResults(violationsObj, config) {
     }
   }
 
-  // Set the action required flag as a number: 1 for true, 0 for false
-  setOutput("action-required", shouldFail ? 1 : 0)
+  // Set the action required flag
+  setOutput("action-required", shouldFail)
 
   // Set violations as JSON output
   try {
