@@ -26,7 +26,7 @@ jobs:
       # Run the action against the test Salesforce files
       - name: Run action on Salesforce test files
         id: code-scan
-        continue-on-error: true
+        continue-on-error: true  # This is the key! Allows subsequent steps to run even if this step fails
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -83,28 +83,7 @@ jobs:
               }
             ]
 
-      # Debug step to see all outputs
-      - name: Debug outputs
-        if: always()
-        run: |
-          echo "=== All outputs from code-scan step ==="
-          echo "action-required: '${{ steps.code-scan.outputs.action-required }}'"
-          echo "total-violations: '${{ steps.code-scan.outputs.total-violations }}'"
-          echo "critical-violations: '${{ steps.code-scan.outputs.critical-violations }}'"
-          echo "Step outcome: '${{ steps.code-scan.outcome }}'"
-          echo "Step conclusion: '${{ steps.code-scan.conclusion }}'"
-
-      # Check if action is required based on violations (using numeric comparison)
+      # Check if action is required based on violations
       - name: Check if action required
         if: steps.code-scan.outputs.action-required == 1
         run: echo "Violations require developer action!"
-
-      # Alternative check with different conditions to test
-      - name: Alternative check (string comparison)
-        if: steps.code-scan.outputs.action-required == '1'
-        run: echo "Alternative - Violations require developer action!"
-
-      # Check if any violations exist
-      - name: Check if any violations exist
-        if: steps.code-scan.outputs.total-violations > 0
-        run: echo "Found violations - ${{ steps.code-scan.outputs.total-violations }}"
