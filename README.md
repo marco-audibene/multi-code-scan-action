@@ -619,6 +619,170 @@ You can use the `action-required` output to conditionally run steps when violati
   run: echo "Violations require developer action!"
 </code></pre>
 
+## Handling Workflow Failures and Conditional Steps
+
+When `failOnQualityIssues` is set to `true` (the default), the action will fail the workflow step if violations exceed thresholds. However, you may still want to run conditional steps after the action fails. Here are the recommended patterns:
+
+### Pattern 1: Continue After Failure (Recommended)
+
+Use `if: always() && condition` to run steps even when the action fails:
+
+<pre><code class="language-yaml">- name: Run Code Quality Scan
+  id: code-scan
+  uses: your-org/multi-code-scan-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    failOnQualityIssues: true  # Action will fail if violations found
+    # ... other inputs
+
+# This step runs even if the action failed
+- name: Check if action required
+  if: always() && steps.code-scan.outputs.action-required == 'true'
+  run: echo "Violations require developer action!"
+
+# This step runs even if the action failed
+- name: Upload reports
+  if: always()
+  uses: actions/upload-artifact@v3
+  with:
+    name: quality-reports
+    path: code-quality-reports/
+</code></pre>
+
+### Pattern 2: Non-Blocking Quality Checks
+
+Set `failOnQualityIssues: false` for informational scans that don't block the workflow:
+
+<pre><code class="language-yaml">- name: Run Code Quality Scan (Non-blocking)
+  id: code-scan
+  uses: your-org/multi-code-scan-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    failOnQualityIssues: false  # Never fail the workflow
+    # ... other inputs
+
+# These steps run normally since the action never fails
+- name: Check if action required
+  if: steps.code-scan.outputs.action-required == 'true'
+  run: echo "Violations found but not blocking merge"
+</code></pre>
+
+### Pattern 3: Custom Failure Handling
+
+Handle failures manually with explicit exit codes:
+
+<pre><code class="language-yaml">- name: Run Code Quality Scan
+  id: code-scan
+  uses: your-org/multi-code-scan-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    failOnQualityIssues: false  # Don't fail automatically
+    # ... other inputs
+
+# Custom logic to decide when to fail
+- name: Evaluate and fail if needed
+  if: always()
+  run: |
+    if [ "${{ steps.code-scan.outputs.action-required }}" == "true" ]; then
+      echo "Quality gate failed - violations require action"
+      exit 1
+    else
+      echo "Quality gate passed"
+    fi
+</code></pre>
+
+### When to Use Each Pattern
+
+| Pattern | Use Case | Workflow Behavior |
+|---------|----------|-------------------|
+| **Pattern 1** | Standard quality gates with post-processing | Fails on violations, runs cleanup steps |
+| **Pattern 2** | Informational scans, legacy projects | Never fails, provides feedback only |
+| **Pattern 3** | Complex conditional logic | Custom failure conditions |
+
+## Severity Mapping and Priority Levels
+
+This action standardizes severity levels across different analyzers. Understanding how tool-specific priorities map to our severity levels is crucial for setting appropriate thresholds.
+
+### Our Standardized Severity Levels
+
+| Severity | Description | Typical Use |
+|----------|-------------|-------------|
+| `critical` | Security vulnerabilities, major bugs | Block all deployments |
+| `high` | Serious issues, performance problems | Block production deployments |
+| `medium` | Code quality issues, maintainability | Allow with limits |
+| `low` | Minor style issues, suggestions | Informational |
+| `info` | Documentation, formatting | Informational |
+
+### PMD Priority Mapping
+
+PMD uses numeric priorities (1-5) which map to our severity levels:
+
+| PMD Priority | Our Severity | Description | Examples |
+|--------------|--------------|-------------|----------|
+| 1 | `critical` | Critical issues that must be fixed | Security vulnerabilities, major bugs |
+| 2 | `high` | Important issues | Performance problems, serious design flaws |
+| 3 | `medium` | Moderate issues | Code quality, maintainability |
+| 4 | `low` | Minor issues | Style violations, minor improvements |
+| 5 | `info` | Informational | Documentation suggestions |
+
+**Example PMD Rules by Priority:**
+- **Priority 1 (Critical)**: SQL injection, hardcoded passwords, null pointer dereference
+- **Priority 2 (High)**: Resource leaks, complex methods, security issues
+- **Priority 3 (Medium)**: Unused variables, naming conventions, design patterns
+- **Priority 4 (Low)**: Code formatting, comment styles
+- **Priority 5 (Info)**: Documentation completeness, optional improvements
+
+### ESLint Severity Mapping
+
+ESLint uses numeric severities (0-2) which map to our severity levels:
+
+| ESLint Severity | Our Severity | Description | Examples |
+|-----------------|--------------|-------------|----------|
+| 2 (error) | `high` | Must be fixed | Syntax errors, security issues, critical bugs |
+| 1 (warn) | `medium` | Should be fixed | Code quality, best practices |
+| 0 (off) | N/A | Rule disabled | Not reported |
+
+**Note**: ESLint doesn't have a "critical" level, so we map errors to "high" severity.
+
+**Example ESLint Rules by Severity:**
+- **Error (High)**: `no-eval`, `no-debugger`, `no-unsafe-negation`
+- **Warning (Medium)**: `no-console`, `no-unused-vars`, `prefer-const`
+
+### Configuring Thresholds Based on Severity
+
+Use these mappings to set appropriate thresholds:
+
+<pre><code class="language-yaml"># Strict configuration - no critical/high issues allowed
+maxCriticalViolations: 0                     # No PMD Priority 1 issues
+maxMediumViolations: 5                       # Limited PMD Priority 3 + ESLint warnings
+
+# Moderate configuration - some high issues allowed in legacy code
+maxCriticalViolations: 0                     # Still no critical issues
+maxMediumViolations: 20                      # More tolerance for quality issues
+
+# Legacy configuration - focus only on critical issues
+maxCriticalViolations: 5                     # Some critical issues allowed
+maxMediumViolations: 100                     # High tolerance for other issues
+</code></pre>
+
+### Differential Enforcement with Severity
+
+Combine severity understanding with differential enforcement:
+
+<pre><code class="language-yaml"># New files: Zero tolerance
+strictNewFiles: true                         # Any violation fails
+
+# Modified files: Graduated tolerance
+maxCriticalViolationsForModifiedFiles: 0     # No critical/high issues
+maxViolationsForModifiedFiles: 10            # Limited total violations
+</code></pre>
+
+This approach ensures that:
+- **Critical security issues** are never allowed
+- **High-priority problems** are strictly controlled
+- **Medium-priority issues** have reasonable limits
+- **Low-priority items** don't block development
+
 ## License
 
 MIT

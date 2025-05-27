@@ -18,6 +18,60 @@ on:
         required: false
         default: 'false'
         type: boolean
+      scan_path:
+        description: 'Path to scan'
+        required: true
+        default: 'language-tests/salesforce/files/'
+        type: string
+      max_critical_violations:
+        description: 'Maximum critical violations allowed'
+        required: true
+        default: '50'
+        type: string
+      max_medium_violations:
+        description: 'Maximum medium violations allowed'
+        required: true
+        default: '100'
+        type: string
+      output_formats:
+        description: 'Output formats'
+        required: true
+        default: 'github'
+        type: choice
+        options:
+          - 'github'
+          - 'github,json'
+          - 'github,html'
+          - 'github,text'
+          - 'github,json,html'
+          - 'github,json,text'
+          - 'github,html,text'
+          - 'github,json,html,text'
+          - 'json'
+          - 'html'
+          - 'text'
+      enable_cache:
+        description: 'Enable scan caching for faster runs'
+        required: false
+        default: 'true'
+        type: boolean
+      config_preset:
+        description: 'Choose a predefined configuration'
+        required: false
+        default: 'salesforce-full'
+        type: choice
+        options:
+          - 'salesforce-full'
+          - 'salesforce-apex'
+          - 'salesforce-lwc'
+          - 'salesforce-aura'
+          - 'salesforce-field'
+          - 'custom'
+      file_types_config:
+        description: 'Custom file types configuration (JSON) - only used if config_preset is "custom"'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   code-quality-manual-test:
@@ -27,67 +81,144 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      # Run the action against all Salesforce test files
-      - name: Run action on all Salesforce test files
+      # Set the configuration based on the preset choice
+      - name: Set configuration
+        id: set-config
+        run: |
+          case "${{ github.event.inputs.config_preset }}" in
+            "salesforce-full")
+              CONFIG='[
+                {
+                  "name": "Classes",
+                  "sourcePath": "language-tests/salesforce/files/classes/",
+                  "fileExtensions": [".cls", ".cls-meta.xml"],
+                  "analyzer": "pmd",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/pmd/apex/ruleset.xml"
+                  ]
+                },
+                {
+                  "name": "LWC",
+                  "sourcePath": "language-tests/salesforce/files/lwc/",
+                  "fileExtensions": [".js"],
+                  "analyzer": "eslint",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/eslint/lwc/standard-ruleset.js"
+                  ]
+                },
+                {
+                  "name": "Aura",
+                  "sourcePath": "language-tests/salesforce/files/aura/",
+                  "fileExtensions": [".js"],
+                  "analyzer": "eslint",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/eslint/aura/standard-ruleset.js"
+                  ]
+                },
+                {
+                  "name": "Fields",
+                  "sourcePath": "language-tests/salesforce/files/objects/",
+                  "fileExtensions": [".field-meta.xml"],
+                  "analyzer": "pmd",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/pmd/xml/field-ruleset.xml"
+                  ]
+                }
+              ]'
+              ;;
+            "salesforce-apex")
+              CONFIG='[
+                {
+                  "name": "Classes",
+                  "sourcePath": "language-tests/salesforce/files/classes/",
+                  "fileExtensions": [".cls", ".cls-meta.xml"],
+                  "analyzer": "pmd",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/pmd/apex/ruleset.xml"
+                  ]
+                }
+              ]'
+              ;;
+            "salesforce-lwc")
+              CONFIG='[
+                {
+                  "name": "LWC",
+                  "sourcePath": "language-tests/salesforce/files/lwc/",
+                  "fileExtensions": [".js"],
+                  "analyzer": "eslint",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/eslint/lwc/standard-ruleset.js"
+                  ]
+                }
+              ]'
+              ;;
+            "salesforce-aura")
+              CONFIG='[
+                {
+                  "name": "Aura",
+                  "sourcePath": "language-tests/salesforce/files/aura/",
+                  "fileExtensions": [".js"],
+                  "analyzer": "eslint",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/eslint/aura/standard-ruleset.js"
+                  ]
+                }
+              ]'
+              ;;
+            "salesforce-field")
+              CONFIG='[
+                {
+                  "name": "Fields",
+                  "sourcePath": "language-tests/salesforce/files/objects/",
+                  "fileExtensions": [".field-meta.xml"],
+                  "analyzer": "pmd",
+                  "rulesPaths": [
+                    "./language-tests/salesforce/rulesets/pmd/xml/field-ruleset.xml"
+                  ]
+                }
+              ]'
+              ;;
+            "custom")
+              CONFIG='${{ github.event.inputs.file_types_config }}'
+              ;;
+            *)
+              echo "Unknown preset: ${{ github.event.inputs.config_preset }}"
+              exit 1
+              ;;
+          esac
+          
+          echo "Selected configuration: ${{ github.event.inputs.config_preset }}"
+          echo "CONFIG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONFIG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      # Run the action against Salesforce test files
+      - name: Run action on Salesforce test files
         id: code-scan
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          sourcePath: "language-tests/salesforce/files/"
+          sourcePath: ${{ github.event.inputs.scan_path }}
           installSalesforcePlugins: true
           check-name: "Salesforce Manual Quality Check"
           
-          # Manual test settings - scan all files, don't fail by default
-          scanChangedFilesOnly: false                  # Scan all files (no PR context)
+          # Manual test settings
           failOnQualityIssues: ${{ github.event.inputs.fail_on_issues }}
+          enableScanCache: ${{ github.event.inputs.enable_cache }}
+          outputFormats: ${{ github.event.inputs.output_formats }}
           
-          # Relaxed thresholds for manual testing
-          maxCriticalViolations: 50
-          maxMediumViolations: 100
+          # Configurable thresholds
+          maxCriticalViolations: ${{ github.event.inputs.max_critical_violations }}
+          maxMediumViolations: ${{ github.event.inputs.max_medium_violations }}
           
-          file-types-config: |
-            [
-              {
-                "name": "Classes",
-                "sourcePath": "language-tests/salesforce/files/classes/",
-                "fileExtensions": [".cls", ".cls-meta.xml"],
-                "analyzer": "pmd",
-                "rulesPaths": [
-                  "./language-tests/salesforce/rulesets/pmd/apex/ruleset.xml"
-                ]
-              },
-              {
-                "name": "LWC",
-                "sourcePath": "language-tests/salesforce/files/lwc/",
-                "fileExtensions": [".js"],
-                "analyzer": "eslint",
-                "rulesPaths": [
-                  "./language-tests/salesforce/rulesets/eslint/lwc/standard-ruleset.js"
-                ]
-              },
-              {
-                "name": "Aura",
-                "sourcePath": "language-tests/salesforce/files/aura/",
-                "fileExtensions": [".js"],
-                "analyzer": "eslint",
-                "rulesPaths": [
-                  "./language-tests/salesforce/rulesets/eslint/aura/standard-ruleset.js"
-                ]
-              },
-              {
-                "name": "Fields",
-                "sourcePath": "language-tests/salesforce/files/objects/",
-                "fileExtensions": [".field-meta.xml"],
-                "analyzer": "pmd",
-                "rulesPaths": [
-                  "./language-tests/salesforce/rulesets/pmd/xml/field-ruleset.xml"
-                ]
-              }
-            ]
+          # Use the configuration from the preset
+          file-types-config: ${{ steps.set-config.outputs.CONFIG }}
 
       # Show results summary
       - name: Show results summary
         run: |
+          echo "Configuration used: ${{ github.event.inputs.config_preset }}"
+          echo "Scan scope: All files in ${{ github.event.inputs.scan_path }}"
           echo "Total violations: ${{ steps.code-scan.outputs.total-violations }}"
           echo "Critical violations: ${{ steps.code-scan.outputs.critical-violations }}"
           echo "Medium violations: ${{ steps.code-scan.outputs.medium-violations }}"
