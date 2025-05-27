@@ -88,6 +88,6 @@ jobs:
         run: echo "Violations require developer action! '${{ steps.code-scan.outputs.action-required }}'"
 
       - name: Debug outputs  
-        if: always()
+        if: ${{ steps.code-scan.outputs.action-required }}
         run: |
           echo "Action required: '${{ steps.code-scan.outputs.action-required }}'"
