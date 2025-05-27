@@ -13,28 +13,38 @@ name: Salesforce Code Quality Manual Test
 on:
   workflow_dispatch:
     inputs:
-      fail_on_issues:
-        description: 'Fail workflow if quality issues are found'
+      # 🎯 WHAT TO SCAN (Core Configuration)
+      config_preset:
+        description: '🎯 What Salesforce components do you want to scan?'
         required: false
-        default: 'false'
-        type: boolean
+        default: 'salesforce-full'
+        type: choice
+        options:
+          - 'salesforce-full'
+          - 'salesforce-apex'
+          - 'salesforce-lwc'
+          - 'salesforce-aura'
+          - 'salesforce-field'
+          - 'custom'
       scan_path:
-        description: 'Path to scan'
+        description: '📁 Path to scan (where your Salesforce test files are located)'
         required: true
         default: 'language-tests/salesforce/files/'
         type: string
-      max_critical_violations:
-        description: 'Maximum critical violations allowed'
-        required: true
-        default: '50'
+      file_types_config:
+        description: '⚙️ Custom file types configuration (JSON) - only used if config_preset is "custom"'
+        required: false
+        default: ''
         type: string
-      max_medium_violations:
-        description: 'Maximum medium violations allowed'
-        required: true
-        default: '100'
-        type: string
+
+      # ⚙️ HOW TO SCAN (Behavior Settings)
+      enable_cache:
+        description: '🚀 Enable caching for faster subsequent runs'
+        required: false
+        default: 'true'
+        type: boolean
       output_formats:
-        description: 'Output formats'
+        description: '📊 How do you want to see the results?'
         required: true
         default: 'github'
         type: choice
@@ -50,28 +60,23 @@ on:
           - 'json'
           - 'html'
           - 'text'
-      enable_cache:
-        description: 'Enable scan caching for faster runs'
-        required: false
-        default: 'true'
-        type: boolean
-      config_preset:
-        description: 'Choose a predefined configuration'
-        required: false
-        default: 'salesforce-full'
-        type: choice
-        options:
-          - 'salesforce-full'
-          - 'salesforce-apex'
-          - 'salesforce-lwc'
-          - 'salesforce-aura'
-          - 'salesforce-field'
-          - 'custom'
-      file_types_config:
-        description: 'Custom file types configuration (JSON) - only used if config_preset is "custom"'
-        required: false
-        default: ''
+
+      # 🚨 QUALITY THRESHOLDS (When to Fail)
+      max_critical_violations:
+        description: '🚨 Maximum critical violations allowed (security issues, major bugs)'
+        required: true
+        default: '50'
         type: string
+      max_medium_violations:
+        description: '⚠️ Maximum medium violations allowed (code quality issues)'
+        required: true
+        default: '100'
+        type: string
+      fail_on_issues:
+        description: '❌ Should the workflow fail if violations exceed thresholds?'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   code-quality-manual-test:
@@ -203,6 +208,7 @@ jobs:
           check-name: "Salesforce Manual Quality Check"
           
           # Manual test settings
+          scanChangedFilesOnly: false # Scan all files (no PR context)
           failOnQualityIssues: ${{ github.event.inputs.fail_on_issues }}
           enableScanCache: ${{ github.event.inputs.enable_cache }}
           outputFormats: ${{ github.event.inputs.output_formats }}
@@ -217,9 +223,9 @@ jobs:
       # Show results summary
       - name: Show results summary
         run: |
-          echo "Configuration used: ${{ github.event.inputs.config_preset }}"
-          echo "Scan scope: All files in ${{ github.event.inputs.scan_path }}"
-          echo "Total violations: ${{ steps.code-scan.outputs.total-violations }}"
-          echo "Critical violations: ${{ steps.code-scan.outputs.critical-violations }}"
-          echo "Medium violations: ${{ steps.code-scan.outputs.medium-violations }}"
-          echo "Action required: ${{ steps.code-scan.outputs.action-required }}"
+          echo "🎯 Configuration used: ${{ github.event.inputs.config_preset }}"
+          echo "📁 Scan scope: All files in ${{ github.event.inputs.scan_path }}"
+          echo "📊 Total violations: ${{ steps.code-scan.outputs.total-violations }}"
+          echo "🚨 Critical violations: ${{ steps.code-scan.outputs.critical-violations }}"
+          echo "⚠️ Medium violations: ${{ steps.code-scan.outputs.medium-violations }}"
+          echo "❗ Action required: ${{ steps.code-scan.outputs.action-required }}"
