@@ -627,8 +627,7 @@ When `failOnQualityIssues` is set to `true` (the default), the action will fail 
 
 Use `if: always() && condition` to run steps even when the action fails:
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   id: code-scan
   uses: your-org/multi-code-scan-action@v1
   with:
@@ -648,14 +647,13 @@ Use `if: always() && condition` to run steps even when the action fails:
   with:
     name: quality-reports
     path: code-quality-reports/
-\`\`\`
+</code></pre>
 
 ### Pattern 2: Non-Blocking Quality Checks
 
 Set `failOnQualityIssues: false` for informational scans that don't block the workflow:
 
-\`\`\`yaml
-- name: Run Code Quality Scan (Non-blocking)
+<pre><code class="language-yaml">- name: Run Code Quality Scan (Non-blocking)
   id: code-scan
   uses: your-org/multi-code-scan-action@v1
   with:
@@ -667,14 +665,13 @@ Set `failOnQualityIssues: false` for informational scans that don't block the wo
 - name: Check if action required
   if: steps.code-scan.outputs.action-required == 'true'
   run: echo "Violations found but not blocking merge"
-\`\`\`
+</code></pre>
 
 ### Pattern 3: Custom Failure Handling
 
 Handle failures manually with explicit exit codes:
 
-\`\`\`yaml
-- name: Run Code Quality Scan
+<pre><code class="language-yaml">- name: Run Code Quality Scan
   id: code-scan
   uses: your-org/multi-code-scan-action@v1
   with:
@@ -692,7 +689,7 @@ Handle failures manually with explicit exit codes:
     else
       echo "Quality gate passed"
     fi
-\`\`\`
+</code></pre>
 
 ### When to Use Each Pattern
 
@@ -755,8 +752,7 @@ ESLint uses numeric severities (0-2) which map to our severity levels:
 
 Use these mappings to set appropriate thresholds:
 
-\`\`\`yaml
-# Strict configuration - no critical/high issues allowed
+<pre><code class="language-yaml"># Strict configuration - no critical/high issues allowed
 maxCriticalViolations: 0                     # No PMD Priority 1 issues
 maxMediumViolations: 5                       # Limited PMD Priority 3 + ESLint warnings
 
@@ -767,20 +763,19 @@ maxMediumViolations: 20                      # More tolerance for quality issues
 # Legacy configuration - focus only on critical issues
 maxCriticalViolations: 5                     # Some critical issues allowed
 maxMediumViolations: 100                     # High tolerance for other issues
-\`\`\`
+</code></pre>
 
 ### Differential Enforcement with Severity
 
 Combine severity understanding with differential enforcement:
 
-\`\`\`yaml
-# New files: Zero tolerance
+<pre><code class="language-yaml"># New files: Zero tolerance
 strictNewFiles: true                         # Any violation fails
 
 # Modified files: Graduated tolerance
 maxCriticalViolationsForModifiedFiles: 0     # No critical/high issues
 maxViolationsForModifiedFiles: 10            # Limited total violations
-\`\`\`
+</code></pre>
 
 This approach ensures that:
 - **Critical security issues** are never allowed
