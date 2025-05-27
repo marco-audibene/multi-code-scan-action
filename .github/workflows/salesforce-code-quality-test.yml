@@ -102,9 +102,9 @@ jobs:
       # Alternative check with different conditions to test
       - name: Alternative check (string comparison)
         if: steps.code-scan.outputs.action-required == '1'
-        run: echo "Alternative: Violations require developer action!"
+        run: echo "Alternative - Violations require developer action!"
 
       # Check if any violations exist
       - name: Check if any violations exist
         if: steps.code-scan.outputs.total-violations > 0
-        run: echo "Found violations: ${{ steps.code-scan.outputs.total-violations }}"
+        run: echo "Found violations - ${{ steps.code-scan.outputs.total-violations }}"
