@@ -86,3 +86,8 @@ jobs:
       - name: Check if action required
         if: steps.code-scan.outputs.action-required == 'true'
         run: echo "Violations require developer action!"
+
+      - name: Debug outputs  
+        if: always()
+        run: |
+          echo "Action required: '${{ steps.code-scan.outputs.action-required }}'"
