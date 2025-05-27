@@ -5,7 +5,7 @@ export default class TestComponent extends LightningElement {
 
   // Violation: console.log 
   connectedCallback() {
-    console.log("Component initialized.")
+    console.log("Component initialized.") 
 
     // Violation: eval
     eval("1 + 1")
