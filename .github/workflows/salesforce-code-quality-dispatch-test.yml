@@ -20,31 +20,38 @@ on:
         type: boolean
       scan_path:
         description: 'Path to scan'
-        required: false
+        required: true
         default: 'language-tests/salesforce/files/'
         type: string
       max_critical_violations:
         description: 'Maximum critical violations allowed'
-        required: false
+        required: true
         default: '50'
         type: string
       max_medium_violations:
         description: 'Maximum medium violations allowed'
-        required: false
+        required: true
         default: '100'
         type: string
       output_formats:
-        description: 'Output formats (comma-separated: github,json,html,text)'
-        required: false
+        description: 'Output formats'
+        required: true
         default: 'github'
-        type: string
+        type: choice
+        options:
+          - 'github'
+          - 'github,json'
+          - 'github,html'
+          - 'github,text'
+          - 'github,json,html'
+          - 'github,json,text'
+          - 'github,html,text'
+          - 'github,json,html,text'
+          - 'json'
+          - 'html'
+          - 'text'
       enable_cache:
         description: 'Enable scan caching for faster runs'
-        required: false
-        default: 'true'
-        type: boolean
-      scan_all_files:
-        description: 'Scan all files (true) or only changed files (false)'
         required: false
         default: 'true'
         type: boolean
@@ -55,10 +62,10 @@ on:
         type: choice
         options:
           - 'salesforce-full'
-          - 'salesforce-apex-only'
-          - 'salesforce-lwc-only'
-          - 'salesforce-aura-only'
-          - 'salesforce-metadata-only'
+          - 'salesforce-apex'
+          - 'salesforce-lwc'
+          - 'salesforce-aura'
+          - 'salesforce-field'
           - 'custom'
       file_types_config:
         description: 'Custom file types configuration (JSON) - only used if config_preset is "custom"'
@@ -119,7 +126,7 @@ jobs:
                 }
               ]'
               ;;
-            "salesforce-apex-only")
+            "salesforce-apex")
               CONFIG='[
                 {
                   "name": "Classes",
@@ -132,7 +139,7 @@ jobs:
                 }
               ]'
               ;;
-            "salesforce-lwc-only")
+            "salesforce-lwc")
               CONFIG='[
                 {
                   "name": "LWC",
@@ -145,7 +152,7 @@ jobs:
                 }
               ]'
               ;;
-            "salesforce-aura-only")
+            "salesforce-aura")
               CONFIG='[
                 {
                   "name": "Aura",
@@ -158,7 +165,7 @@ jobs:
                 }
               ]'
               ;;
-            "salesforce-metadata-only")
+            "salesforce-field")
               CONFIG='[
                 {
                   "name": "Fields",
@@ -195,8 +202,7 @@ jobs:
           installSalesforcePlugins: true
           check-name: "Salesforce Manual Quality Check"
           
-          # Manual test settings - use inputs or defaults
-          scanChangedFilesOnly: ${{ github.event.inputs.scan_all_files == 'false' }}
+          # Manual test settings
           failOnQualityIssues: ${{ github.event.inputs.fail_on_issues }}
           enableScanCache: ${{ github.event.inputs.enable_cache }}
           outputFormats: ${{ github.event.inputs.output_formats }}
@@ -212,6 +218,7 @@ jobs:
       - name: Show results summary
         run: |
           echo "Configuration used: ${{ github.event.inputs.config_preset }}"
+          echo "Scan scope: All files in ${{ github.event.inputs.scan_path }}"
           echo "Total violations: ${{ steps.code-scan.outputs.total-violations }}"
           echo "Critical violations: ${{ steps.code-scan.outputs.critical-violations }}"
           echo "Medium violations: ${{ steps.code-scan.outputs.medium-violations }}"
