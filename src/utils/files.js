@@ -69,7 +69,6 @@ async function getAllFiles(sourcePath) {
   // Use git ls-files to get all tracked files
   let output = ""
   const options = {
-    silent: true, // Suppress command output
     listeners: {
       stdout: (data) => {
         output += data.toString()
